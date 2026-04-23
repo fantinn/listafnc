@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lista de Fornecedores</title>
+    <meta name="description" content="Eleve o nível do seu negócio com nossa lista completa de fornecedores de confiança." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      :root {
+        --blue: #0066ff;
+        --sky: #60a5fa;
+        --dark: #030406;
+        --darker: #080c12;
+        --light: #e8f0ff;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; overflow-x: hidden; }
+      body { background-color: var(--dark); color: var(--light); font-family: "Inter", sans-serif; overflow-x: hidden; text-transform: uppercase; padding-top: 52px; }
+
+      .sticky-timer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 120;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 0;
+        background: rgba(3,4,6,0.92);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(14px);
+      }
+      .sticky-timer .timer-label {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: none;
+        gap: 16px;
+        padding: 0 24px;
+        height: 100%;
+        background: rgba(0,102,255,0.14);
+        color: rgba(255,255,255,0.95);
+        font-size: 0.85rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      .sticky-timer .timer-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.92);
+      }
+      .sticky-timer .timer-status i {
+        color: var(--blue);
+        font-size: 1rem;
+      }
+      .sticky-timer .timer-text {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .sticky-timer .timer-value {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 100px;
+        padding: 10px 16px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: var(--blue);
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1rem;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+      }
+      .sticky-timer .timer-action {
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        color: rgba(255,255,255,0.75);
+      }
+      @keyframes pulseGlow {
+        from { box-shadow: none; }
+        to { box-shadow: none; }
+      }
+
+      .font-display { font-family: "Space Grotesk", sans-serif; }
+
+      /* Grid background */
+      .grid-bg::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.5;
+      }
+
+      /* Shimmer button */
+      .btn-blue {
+        position: relative;
+        overflow: hidden;
+        background: var(--blue);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 20px 40px;
+        border-radius: 14px;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+      }
+      .btn-blue::after {
+        content: "";
+        position: absolute;
+        top: -50%; left: -75%;
+        width: 50%; height: 200%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transform: skewX(-20deg);
+        animation: shimmer 2.5s infinite;
+      }
+      .btn-blue:hover { transform: scale(1.04); }
+      .btn-blue.pulse { animation: bpulse 2s ease-in-out infinite; }
+
+      @keyframes shimmer { 100% { left: 125%; } }
+      @keyframes bpulse {
+        0%, 100% { box-shadow: 0 0 20px rgba(0,102,255,0.4); }
+        50% { box-shadow: 0 0 55px rgba(0,102,255,0.85); }
+      }
+      @keyframes bounce-y {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+      }
+
+      /* Reveal animation */
+      .reveal {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+      }
+      .reveal.active { opacity: 1; transform: translateY(0); }
+      .d1 { transition-delay: 0.1s; }
+      .d2 { transition-delay: 0.2s; }
+      .d3 { transition-delay: 0.3s; }
+      .d4 { transition-delay: 0.4s; }
+
+      /* Cards */
+      .card {
+        background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+        border: 1px solid rgba(0,102,255,0.2);
+        border-radius: 20px;
+        padding: 24px;
+        min-height: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+      .card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,102,255,0.1); }
+      .card.featured {
+        background: var(--darker);
+        border-color: rgba(0,102,255,0.55);
+        box-shadow: 0 0 40px rgba(0,102,255,0.12);
+      }
+
+      /* Icon box */
+      .icon-box {
+        width: 48px; height: 48px; border-radius: 10px;
+        background: rgba(0,102,255,0.15);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--sky);
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        transition: background 0.3s, color 0.3s;
+      }
+      .card:hover .icon-box { background: var(--blue); color: #fff; }
+      .card h3 { margin: 0 0 8px; }
+      .card p { margin: 0; }
+
+      /* Badge */
+      .badge {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 6px 16px; border-radius: 999px;
+        background: rgba(0,102,255,0.1);
+        border: 1px solid rgba(0,102,255,0.3);
+        color: var(--sky);
+        font-size: 0.68rem; font-weight: 700;
+        letter-spacing: 0.18em; text-transform: uppercase;
+      }
+
+      /* Bonus badge */
+      .bonus-card {
+        background: linear-gradient(135deg, rgba(0,102,255,0.1), rgba(96,165,250,0.05));
+        border: 1px solid rgba(0,102,255,0.22);
+        border-radius: 16px;
+        padding: 24px 28px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      /* Price */
+      .price {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 3.5rem; font-weight: 800;
+        background: linear-gradient(135deg, #0066ff, #60a5fa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Floating WA button */
+      .wa-btn {
+        position: fixed; bottom: 32px; right: 32px; z-index: 100;
+        width: 56px; height: 56px; border-radius: 50%;
+        background: var(--blue); color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; text-decoration: none;
+        box-shadow: 0 0 30px rgba(0,102,255,0.55);
+        animation: bounce-y 2s ease-in-out infinite;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .wa-btn:hover { transform: scale(1.12); box-shadow: 0 0 50px rgba(0,102,255,0.8); }
+
+      /* Section layout */
+      section { position: relative; z-index: 10; }
+      .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+      .container-sm { max-width: 700px; margin: 0 auto; padding: 0 24px; }
+
+      h1, h2, h3, h4 { font-family: "Space Grotesk", sans-serif; }
+
+      /* Grid helpers */
+      .grid-3 { display: grid; grid-template-columns: 1fr; gap: 12px; align-items: stretch; justify-content: center; }
+      .grid-2 { display: grid; grid-template-columns: 1fr; gap: 36px; }
+      .bonus-layout { display: grid; grid-template-columns: 1fr; gap: 32px; align-items: start; justify-content: center; }
+      .bonus-layout .bonus-image { display: flex; justify-content: center; }
+      .bonus-layout img { width: 100%; max-width: 461px; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,102,255,0.18); }
+      .bonus-layout .bonus-content { display: flex; flex-direction: column; gap: 24px; }
+      @media (min-width: 768px) {
+        .grid-3 { grid-template-columns: repeat(2, minmax(480px, 1fr)); max-width: 1000px; margin: 0 auto; gap: 12px; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .bonus-layout { grid-template-columns: minmax(280px, 0.95fr) minmax(380px, 1.2fr); }
+      }
+
+      @media (max-width: 767px) {
+        .hero-cta { margin-top: 18px !important; }
+        .final-cta { margin-top: 24px !important; }
+        .hero-cta .btn-blue,
+        .final-cta .btn-blue {
+          font-size: 0.95rem !important;
+          padding: 12px 35px !important;
+          max-width: 520px !important;
+        }
+         .lista-image { width: calc(100%) !important; max-width: none !important; margin: 0 -40px; }
+      }
+
+      .text-muted { color: rgba(232,240,255,0.6); }
+      .text-faint { color: rgba(232,240,255,0.4); }
+      .text-blue { color: var(--sky); }
+
+      footer { border-top: 1px solid rgba(255,255,255,0.08); background: var(--darker); padding: 40px 0; }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: var(--dark); }
+      ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: var(--sky); }
+    </style>
+  </head>
+
+  <body class="grid-bg">
+    <nav class="sticky-timer">
+      <div class="timer-label">
+        <div class="timer-status">
+          <i class="fa-solid fa-bolt"></i>
+          <span>OFERTA EXPIRA EM</span>
+        </div>
+        <div class="timer-text">
+          <strong id="fakeTimer" class="timer-value">30:00</strong>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Ambient glow -->
+    <div style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:800px;height:350px;background:radial-gradient(circle,rgba(0,102,255,0.07),transparent 70%);filter:blur(60px);pointer-events:none;z-index:0;border-radius:50%;"></div>
+
+    <!-- ====== HERO ====== -->
+    <section style="padding: 40px 0 50px;">
+      <div class="container-sm" style="text-align:center;max-width:900px;">
+
+        <h1 class="reveal d1" style="font-size:clamp(2.5rem,8vw,4.5rem);font-weight:700;line-height:1;margin:0;color:var(--light);">
+          <img src="seuNegocio.png" alt="Seu negócio" style="width:100%;max-width:860px;height:auto;display:block;margin:0 auto;margin-bottom:-6px;" />
+        </h1>
+        
+        
+        <div class="reveal d4 hero-cta" style="display:flex;justify-content:center;margin-top:-70px;">
+          <a href="#comprar" class="btn-blue pulse" style="font-size:1rem;padding:18px 32px;max-width:560px;width:100%;display:inline-flex;justify-content:center;min-width:0;">
+            ADIQUIRIR LISTA DE FORNECEDORES
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+        
+        <div class="reveal d4" style="display:flex;justify-content:center;gap:20px;margin-top:20px;font-size:0.82rem;color:rgba(232,240,255,0.42);">
+          <span><i class="fa-solid fa-lock text-blue" style="margin-right:5px;"></i>Compra segura</span>
+          <span><i class="fa-solid fa-bolt text-blue" style="margin-right:5px;"></i>Entrega imediata</span>
+        </div>
+      </div>
+    </section>
+
+    
+ <!-- ====== O QUE VEM NA LISTA ====== -->
+    <section style="padding:60px 0;">
+      <div class="container">
+        <div class="reveal" style="text-align:center;margin-bottom:48px;">
+          <div class="section-divider"></div>
+          <h2 style="font-size:clamp(1.8rem,4vw,3rem);font-weight:700;color:var(--light);margin-bottom:12px;">O que vem na lista?</h2>
+          <p class="text-muted" style="font-size:0.9rem;max-width:480px;margin:0 auto;line-height:1.7;">TUDO QUE VOCÊ PRECISA PARA ELEVAR O PADRÃO DO SEU NEGÓCIO DE UMA VEZ SÓ.</p>
+        </div>
+
+        <div class="grid-3">
+          <div class="card reveal">
+            <div>
+              <div class="icon-box"><i class="fa-solid fa-list-check"></i></div>
+              <h3 style="font-size:1.15rem;font-weight:700;color:var(--light);margin-bottom:10px;">TODOS CONTATOS DOS NOSSOS FORNECEDORES</h3>
+              <p class="text-muted" style="line-height:1.6;font-size:0.9rem;">VOCÊ TERÁ ACESSO A TODOS CONTATOS QUE NOS FORNECEM AS PEÇAS PODENDO TRABALHAR COM O MESMO PADRÃO DE QUALIDADE.</p>
+            </div>
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);font-size:0.75rem;color:rgba(232,240,255,0.35);letter-spacing:0.1em;">
+              INCLUSO NO PACOTE
+            </div>
+          </div>
+
+          <div class="card featured reveal d1" style="position:relative;">
+            <div style="position:absolute;top:0;right:0;background:var(--blue);color:#fff;font-size:0.68rem;font-weight:700;padding:5px 14px;border-radius:0 20px 0 12px;letter-spacing:0.1em;">BÔNUS</div>
+            <div>
+              <div class="icon-box"><i class="fa-solid fa-people-group"></i></div>
+              <h3 style="font-size:1.15rem;font-weight:700;color:var(--light);margin-bottom:10px;">PROFISSIONAIS DA NOSSA LOJA</h3>
+              <p class="text-muted" style="line-height:1.6;font-size:0.9rem;">CONTATOS DE QUEM CUIDA DA NOSSA LOJA, DESIGNER, CRIADOR DE SITE, GESTOR DE TRÁFEGO, ENTRE OUTROS.</p>
+            </div>
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(0,102,255,0.2);font-size:0.75rem;color:var(--sky);letter-spacing:0.1em;">
+              BÔNUS EXCLUSIVO ✦
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- ====== BÔNUS DETALHADO ====== -->
+    <section style="padding:60px 0 88px;">
+      <div class="container">
+        <div class="bonus-layout">
+          <div class="bonus-image">
+            <img src="transforma.jpg" alt="Transforma" />
+          </div>
+
+          <div class="bonus-content">
+            <div class="reveal" style="text-align:left;">
+              <span class="badge">COMPRANDO HOJE VOCÊ TAMBÉM LEVA</span>
+              <h2 style="font-size:clamp(1.6rem,3.5vw,2.5rem);font-weight:700;color:var(--light);margin-top:16px;">Contatos de </span><span style="color: #0066ff;">bônus</span> exclusivos</h2>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div class="bonus-card reveal">
+                <span style="font-size:2rem;flex-shrink:0;">🎨</span>
+                <div>
+                  <h4 style="font-weight:700;font-size:1.05rem;color:var(--light);margin-bottom:4px;">Designer profissional</h4>
+                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">Contato direto com o designer que cuida da nossa identidade visual</p>
+                </div>
+              </div>
+              <div class="bonus-card reveal d1">
+                <span style="font-size:2rem;flex-shrink:0;">🌐</span>
+                <div>
+                  <h4 style="font-weight:700;font-size:1.05rem;color:var(--light);margin-bottom:4px;">Criador de site</h4>
+                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">QUEM MONTA E MANTÉM NOSSO SITE, PARA VOCÊ TER O MESMO PADRÃO NO SEU NEGÓCIO</p>
+                </div>
+              </div>
+              <div class="bonus-card reveal d2">
+                <span style="font-size:2rem;flex-shrink:0;">📈</span>
+                <div>
+                  <h4 style="font-weight:700;font-size:1.05rem;color:var(--light);margin-bottom:4px;">Gestor de tráfego pago</h4>
+                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">UM PROFISSIONAL QUE CUIDA DA NOSSA PARTE DE DIVULGAÇÃO COM ANÚNCIOS NAS PLATAFORMAS DIGITAIS PARA ATRAIR MAIS CLIENTES</p>
+                </div>
+              </div>
+              <div class="bonus-card reveal d3">
+                <span style="font-size:2rem;flex-shrink:0;">➕</span>
+                <div>
+                  <h4 style="font-weight:700;font-size:1.05rem;color:var(--light);margin-bottom:4px;">Entre outros profissionais</h4>
+                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">ENTRE OUTROS PROFISSIONAIS QUE FAZEM PARTE DO NOSSO NEGÓCIO</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- ====== PARA QUEM É ====== 
+    <section style="padding:88px 0;">
+      <div class="container">
+        <h2 class="reveal" style="font-size:clamp(1.8rem,4vw,3rem);font-weight:700;text-align:center;margin-bottom:56px;color:var(--light);">PARA QUEM É</h2>
+        <div class="grid-2">
+          <div class="reveal">
+            <h4 style="font-size:1.1rem;font-weight:700;color:var(--light);margin-bottom:20px;">Você vai aproveitar se:</h4>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;">
+              <li style="display:flex;align-items:flex-start;gap:12px;color:rgba(232,240,255,0.72);line-height:1.5;"><span style="color:var(--sky);">✔️</span>Quer iniciar uma loja com fornecedores de qualidade</li>
+              <li style="display:flex;align-items:flex-start;gap:12px;color:rgba(232,240,255,0.72);line-height:1.5;"><span style="color:var(--sky);">✔️</span>Já tem uma loja e quer elevar o padrão das peças</li>
+              <li style="display:flex;align-items:flex-start;gap:12px;color:rgba(232,240,255,0.72);line-height:1.5;"><span style="color:var(--sky);">✔️</span>Quer profissionalizar seu negócio do zero</li>
+              <li style="display:flex;align-items:flex-start;gap:12px;color:rgba(232,240,255,0.72);line-height:1.5;"><span style="color:var(--sky);">✔️</span>Busca referências reais de quem já faz acontecer</li>
+            </ul>
+          </div>
+          <div class="reveal d1">
+            <h4 style="font-size:1.1rem;font-weight:700;color:var(--light);margin-bottom:20px;">Não é para você se:</h4>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;">
+              <li style="display:flex;align-items:flex-start;gap:12px;color:rgba(232,240,255,0.72);line-height:1.5;"><span style="color:#f87171;">✖️</span>Não tem intenção de agir com os contatos</li>
+              <li style="display:flex;align-items:flex-start;gap:12px;color:rgba(232,240,255,0.72);line-height:1.5;"><span style="color:#f87171;">✖️</span>Busca apenas curiosidade sem propósito</li>
+              <li style="display:flex;align-items:flex-start;gap:12px;color:rgba(232,240,255,0.72);line-height:1.5;"><span style="color:#f87171;">✖️</span>Não está disposto a investir no próprio negócio</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section> -->
+
+    <!-- ====== OFERTA ====== -->
+    <section id="comprar" style="padding:48px 0;position:relative;z-index:10;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0, 102, 255, 0.026),transparent);filter:blur(60px);pointer-events:none;"></div>
+      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:420px;height:220px;background:rgba(0,102,255,0.08);border-radius:50%;filter:blur(90px);pointer-events:none;"></div>
+
+      <div class="container-sm" style="position:relative;z-index:1;">
+        <div style="background:var(--darker);border:1px solid rgba(0,102,255,0.5);border-radius:24px;padding:clamp(20px,3vw,32px);text-align:center;box-shadow:0 0 60px rgba(0,102,255,0.18);">
+
+          <div style="display:inline-flex;align-items:center;gap:12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);padding:8px 16px;border-radius:999px;margin-bottom:18px;">
+            <span style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.92);font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;">
+              <i class="fa-solid fa-bolt" style="color:#f87171;"></i>
+              OFERTA EXPIRA EM
+            </span>
+            <strong style="font-family:'Space Grotesk',sans-serif;font-weight:800;color:#f87171;font-size:0.85rem;letter-spacing:0.12em;" id="offerTimer">30:00</strong>
+          </div>
+
+          <h2 style="font-size:clamp(1.4rem,3vw,2rem);font-weight:700;color:var(--light);margin-bottom:8px;">LISTA DE FORNECEDORES</h2>
+          <p class="text-faint" style="margin-bottom:20px;font-size:0.92rem;">+ BÔNUS EXCLUSIVO</p>
+
+          <div class="price" style="margin-bottom:4px;">
+  <span style="font-family:'Space Grotesk',sans-serif; font-size:0.85rem; color:rgba(232,240,255,0.45); letter-spacing:0.1em; display:block; margin-bottom:4px; text-decoration:none;">
+    DE <span style="text-decoration:line-through;">R$ 700,00</span>
+  </span>
+  <span style="font-family:'Space Grotesk',sans-serif; font-size:clamp(2.8rem,8vw,4.2rem); font-weight:800; color:#00c853; display:block; line-height:1; letter-spacing:-0.01em;">
+    R$ 297,90
+  </span>
+  <span style="font-family:'Space Grotesk',sans-serif; font-size:0.78rem; color:rgba(232,240,255,0.4); letter-spacing:0.12em; display:block; margin-top:6px;">
+    PAGAMENTO ÚNICO
+  </span>
+</div>
+          <p class="text-faint" style="font-size:0.82rem;margin-bottom:24px;">pagamento único · entrega imediata</p>
+
+          <ul style="list-style:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:18px;margin-bottom:20px;display:flex;flex-direction:column;gap:10px;text-align:left;">
+            <li style="display:flex;align-items:center;gap:10px;color:rgba(232,240,255,0.8);font-size:0.92rem;"><i class="fa-solid fa-check" style="color:var(--sky);width:16px;flex-shrink:0;"></i>LISTA COMPLETA DE FORNECEDORES DE CONFIANÇA</li>
+            <li style="display:flex;align-items:center;gap:10px;color:rgba(232,240,255,0.8);font-size:0.92rem;"><i class="fa-solid fa-check" style="color:var(--sky);width:16px;flex-shrink:0;"></i>BÔNUS DE CONTATOS DOS PROFISSIONAIS QUE CUIDAM DE CADA DETALHE DA NOSSA LOJA</li>
+          </ul>
+
+          <a href="#" class="btn-blue pulse" style="width:100%;font-size:0.95rem;padding:16px 28px;margin-bottom:14px;">
+            GARANTIR AGORA A LISTA!!!
+          </a>
+
+          <p class="text-faint" style="font-size:0.75rem;">🔒 Compra 100% segura · Entrega por e-mail imediata</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== FINAL CTA ====== -->
+    <section style="padding:80px 0;">
+       <img class="lista-image" src="listaCompleta.png" alt="Seu negócio" style="width:100%;max-width:860px;height:auto;display:block;margin:0 auto;" />
+        <div class="reveal d4 final-cta" style="display:flex;justify-content:center;margin-top:-70px;">
+          <a href="#comprar" class="btn-blue pulse" style="font-size:1rem;padding:18px 32px;max-width:480px;width:auto;display:inline-flex;justify-content:center;min-width:0;">
+            QUERO A LISTA AGORA
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+    </section>
+
+    <!-- FLOATING WHATSAPP -->
+    <a href="https://wa.me/5527998706492?text=Ol%C3%A1%2C%20quero%20a%20lista%20de%20fornecedores" target="_blank" class="wa-btn">
+      <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="container" style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;">
+        <p class="text-faint" style="font-size:0.78rem;">© 2026 · Todos os direitos reservados.</p>
+        <div style="display:flex;gap:24px;font-size:0.85rem;color:rgba(232,240,255,0.45);">
+
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("active");
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+
+        document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+
+        const timerElement = document.getElementById("fakeTimer");
+        const offerTimer = document.getElementById("offerTimer");
+        const TIMER_KEY = "fakeTimerExpiry";
+        const now = Date.now();
+        let endTime = null;
+
+        const storedEnd = localStorage.getItem(TIMER_KEY);
+        if (storedEnd && !Number.isNaN(Number(storedEnd))) {
+          endTime = Number(storedEnd);
+        }
+
+        if (!endTime || endTime <= now) {
+          endTime = now + 30 * 60 * 1000;
+          localStorage.setItem(TIMER_KEY, String(endTime));
+        }
+
+        const updateTimer = () => {
+          const secondsLeft = Math.max(0, Math.round((endTime - Date.now()) / 1000));
+          const minutes = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+          const seconds = String(secondsLeft % 60).padStart(2, "0");
+          const timeString = `${minutes}:${seconds}`;
+          if (timerElement) timerElement.textContent = timeString;
+          if (offerTimer) offerTimer.textContent = timeString;
+          return secondsLeft;
+        };
+
+        if (timerElement || offerTimer) {
+          let secondsLeft = updateTimer();
+          const interval = setInterval(() => {
+            secondsLeft = updateTimer();
+            if (secondsLeft <= 0) {
+              clearInterval(interval);
+              if (timerElement) timerElement.textContent = "00:00";
+              if (offerTimer) offerTimer.textContent = "00:00";
+              localStorage.removeItem(TIMER_KEY);
+            }
+          }, 1000);
+        }
+      });
+    </script>
+  </body>
+</html>

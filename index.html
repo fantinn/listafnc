@@ -95,15 +95,53 @@
         50% { transform: translateY(-6px); }
       }
 
+      /* ===== LOGO FLOAT ANIMATION ===== */
+      @keyframes logo-float {
+        0%   { transform: translateY(0px); }
+        50%  { transform: translateY(-12px); }
+        100% { transform: translateY(0px); }
+      }
+
+      .logo-hero {
+        width: 100%;
+        max-width: 150px;
+        height: auto;
+        display: block;
+        margin: 0 auto 0;
+        animation: logo-float 3s ease-in-out infinite;
+      }
+
+      /* ===== /LOGO ===== */
+
+      /* Social proof: negativo só em desktop onde a imagem tem espaço em branco grande */
+      .social-proof { margin-top: 4px; }
+
+      @media (min-width: 768px) {
+        .social-proof { margin-top: -140px; }
+        .logo-hero-mb { margin-bottom: -50px !important; }
+      }
+      @media (max-width: 767px) {
+        .social-proof { margin-top: -40px; }
+        .logo-hero-mb { margin-bottom: -10px !important; }
+      }
+
       .reveal {
-        opacity: 0; transform: translateY(28px);
-        transition: opacity 0.7s ease, transform 0.7s ease;
+        opacity: 0; transform: translateY(36px);
+        transition: opacity 0.75s cubic-bezier(0.22,1,0.36,1), transform 0.75s cubic-bezier(0.22,1,0.36,1);
       }
       .reveal.active { opacity: 1; transform: translateY(0); }
-      .d1 { transition-delay: 0.1s; }
-      .d2 { transition-delay: 0.2s; }
-      .d3 { transition-delay: 0.3s; }
-      .d4 { transition-delay: 0.4s; }
+
+      /* Variações direcionais */
+      .reveal-left  { opacity: 0; transform: translateX(-48px); transition: opacity 0.75s cubic-bezier(0.22,1,0.36,1), transform 0.75s cubic-bezier(0.22,1,0.36,1); }
+      .reveal-right { opacity: 0; transform: translateX(48px);  transition: opacity 0.75s cubic-bezier(0.22,1,0.36,1), transform 0.75s cubic-bezier(0.22,1,0.36,1); }
+      .reveal-scale { opacity: 0; transform: scale(0.88);        transition: opacity 0.75s cubic-bezier(0.22,1,0.36,1), transform 0.75s cubic-bezier(0.22,1,0.36,1); }
+      .reveal-left.active, .reveal-right.active, .reveal-scale.active { opacity: 1; transform: none; }
+
+      .d1 { transition-delay: 0.08s; }
+      .d2 { transition-delay: 0.16s; }
+      .d3 { transition-delay: 0.24s; }
+      .d4 { transition-delay: 0.32s; }
+      .d5 { transition-delay: 0.40s; }
 
       .card {
         background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
@@ -152,7 +190,6 @@
       }
       .bonus-icon svg { width: 22px; height: 22px; }
 
-      /* Price — classes dedicadas para garantir cores corretas sem webkit-fill override */
       .price-old {
         font-family: "Space Grotesk", sans-serif;
         font-size: 0.85rem;
@@ -220,6 +257,7 @@
           font-size: 0.95rem !important; padding: 12px 35px !important; max-width: 520px !important;
         }
         .lista-image { width: calc(100%) !important; max-width: none !important; margin: 0 -40px; }
+        .logo-hero { max-width: 110px; }
       }
 
       .text-muted { color: rgba(232,240,255,0.6); }
@@ -251,20 +289,34 @@
     <div style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:800px;height:350px;background:radial-gradient(circle,rgba(0,102,255,0.07),transparent 70%);filter:blur(60px);pointer-events:none;z-index:0;border-radius:50%;"></div>
 
     <!-- ====== HERO ====== -->
-    <section style="padding: 40px 0 50px;">
+    <section style="padding: 32px 0 50px;">
       <div class="container-sm" style="text-align:center;max-width:900px;">
-        <h1 class="reveal d1" style="font-size:clamp(2.5rem,8vw,4.5rem);font-weight:700;line-height:1;margin:0;color:var(--light);">
-          <img src="seuNegocio.png" alt="Seu negócio" style="width:100%;max-width:860px;height:auto;display:block;margin:0 auto;margin-bottom:-6px;" />
-        </h1>
 
-        <div class="reveal d4 hero-cta" style="display:flex;justify-content:center;margin-top:-70px;">
+        <!-- LOGO -->
+        <img
+          src="logo.png"
+          alt="Logo"
+          class="logo-hero logo-hero-mb"
+          style=""
+        />
+
+        <!-- Hero image + social proof num bloco só -->
+        <div style="margin:0;padding:0;line-height:0;">
+          <img src="seuNegocio.png" alt="Seu negócio" style="width:100%;max-width:860px;height:auto;display:block;margin:0 auto;" />
+          <p class="social-proof" style="line-height:1.6;font-size:0.75rem;color:rgba(232,240,255,0.4);letter-spacing:0.12em;max-width:900px;position:relative;z-index:2;margin-left:auto;margin-right:auto;margin-bottom:0;font-family:'Inter',sans-serif;font-weight:400;">
+            + DE 1.000 LOJISTAS JÁ ELEVARAM O NÍVEL DO SEU NEGÓCIO COM A NOSSA LISTA DE FORNECEDORES!<br/>
+            TRABALHANDO COM PEÇAS DE ALTA QUALIDADE E AUMENTANDO SUA MARGEM DE LUCRO EM + DE 150%
+          </p>
+        </div>
+
+        <div class="reveal hero-cta" style="display:flex;justify-content:center;margin-top:28px;">
           <a href="#comprar" class="btn-blue pulse" style="font-size:1rem;padding:18px 32px;max-width:560px;width:100%;display:inline-flex;justify-content:center;min-width:0;">
             ADQUIRIR LISTA DE FORNECEDORES
             <i class="fa-solid fa-arrow-right"></i>
           </a>
         </div>
 
-        <div class="reveal d4" style="display:flex;justify-content:center;gap:20px;margin-top:20px;font-size:0.82rem;color:rgba(232,240,255,0.42);">
+        <div class="reveal" style="display:flex;justify-content:center;gap:20px;margin-top:20px;font-size:0.82rem;color:rgba(232,240,255,0.42);">
           <span><i class="fa-solid fa-lock text-blue" style="margin-right:5px;"></i>Compra segura</span>
           <span><i class="fa-solid fa-bolt text-blue" style="margin-right:5px;"></i>Entrega imediata</span>
         </div>
@@ -280,23 +332,23 @@
         </div>
 
         <div class="grid-3">
-          <div class="card reveal">
+          <div class="card reveal reveal-left">
             <div>
               <div class="icon-box"><i class="fa-solid fa-list-check"></i></div>
               <h3 style="font-size:1.15rem;font-weight:700;color:var(--light);margin-bottom:10px;">TODOS CONTATOS DOS NOSSOS FORNECEDORES</h3>
-              <p class="text-muted" style="line-height:1.6;font-size:0.9rem;">VOCÊ TERÁ ACESSO A TODOS CONTATOS QUE NOS FORNECEM AS PEÇAS PODENDO TRABALHAR COM O MESMO PADRÃO DE QUALIDADE.</p>
+              <p class="text-muted" style="line-height:1.6;font-size:0.9rem;">VOCÊ TERÁ ACESSO A NOSSA LISTA COMPLETA COM OS MESMOS FORNECEDORES QUE FORNECEM PEÇAS PARA NÓS DE ALTO PADRÃO DE QUALIDADE.</p>
             </div>
             <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);font-size:0.75rem;color:rgba(232,240,255,0.35);letter-spacing:0.1em;">
               INCLUSO NO PACOTE
             </div>
           </div>
 
-          <div class="card featured reveal d1" style="position:relative;">
+          <div class="card featured reveal reveal-right d1" style="position:relative;">
             <div style="position:absolute;top:0;right:0;background:var(--blue);color:#fff;font-size:0.68rem;font-weight:700;padding:5px 14px;border-radius:0 20px 0 12px;letter-spacing:0.1em;">BÔNUS</div>
             <div>
               <div class="icon-box"><i class="fa-solid fa-people-group"></i></div>
-              <h3 style="font-size:1.15rem;font-weight:700;color:var(--light);margin-bottom:10px;">PROFISSIONAIS DA NOSSA LOJA</h3>
-              <p class="text-muted" style="line-height:1.6;font-size:0.9rem;">CONTATOS DE QUEM CUIDA DA NOSSA LOJA, DESIGNER, CRIADOR DE SITE, GESTOR DE TRÁFEGO, ENTRE OUTROS.</p>
+              <h3 style="font-size:1.15rem;font-weight:700;color:var(--light);margin-bottom:10px;">PROFISSIONAIS</h3>
+              <p class="text-muted" style="line-height:1.6;font-size:0.9rem;">CONTATOS EXTRA QUE ENVIAREMOS TOTALMENTE DE BRINDE NA LISTA DE QUEM PODE AGREGAR VALOR AO SEU NEGÓCIO COMO DESIGNER, CRIADOR DE SITE, GESTOR DE TRÁFEGO PAGO ENTRE OUTROS.</p>
             </div>
             <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(0,102,255,0.2);font-size:0.75rem;color:var(--sky);letter-spacing:0.1em;">
               BÔNUS EXCLUSIVO ✦
@@ -322,8 +374,7 @@
 
             <div style="display:flex;flex-direction:column;gap:12px;">
 
-              <!-- Designer -->
-              <div class="bonus-card reveal">
+              <div class="bonus-card reveal reveal-left">
                 <div class="bonus-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
@@ -331,12 +382,11 @@
                 </div>
                 <div>
                   <h4 style="font-weight:700;font-size:1.05rem;color:var(--light);margin-bottom:4px;">Designer profissional</h4>
-                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">Contato direto com o designer que cuida da nossa identidade visual</p>
+                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">CONTATO DIRETO COM O DESIGNER QUE CUIDA DIRETO DA IDENTIDADE VISUAL DO SEU NEGÓCIO.</p>
                 </div>
               </div>
 
-              <!-- Site -->
-              <div class="bonus-card reveal d1">
+              <div class="bonus-card reveal reveal-right d1">
                 <div class="bonus-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
@@ -344,12 +394,11 @@
                 </div>
                 <div>
                   <h4 style="font-weight:700;font-size:1.05rem;color:var(--light);margin-bottom:4px;">Criador de site</h4>
-                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">QUEM MONTA E MANTÉM NOSSO SITE, PARA VOCÊ TER O MESMO PADRÃO NO SEU NEGÓCIO</p>
+                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">QUEM CRIA E TE AUXILIA COM O SITE PARA QUE O CLIENTE TENHA A MELHOR EXPERIÊNCIA NA PLATAFORMA.</p>
                 </div>
               </div>
 
-              <!-- Tráfego -->
-              <div class="bonus-card reveal d2">
+              <div class="bonus-card reveal reveal-left d2">
                 <div class="bonus-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
@@ -357,12 +406,11 @@
                 </div>
                 <div>
                   <h4 style="font-weight:700;font-size:1.05rem;color:var(--light);margin-bottom:4px;">Gestor de tráfego pago</h4>
-                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">UM PROFISSIONAL QUE CUIDA DA NOSSA DIVULGAÇÃO COM ANÚNCIOS NAS PLATAFORMAS DIGITAIS PARA ATRAIR MAIS CLIENTES</p>
+                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">UM PROFISSIONAL QUE CUIDA DA DIVULGAÇÃO POR MEIO DE ANÚNCIOS NAS PLATAFORMAS DIGITAIS PARA ATRAIR MAIS CLIENTES.</p>
                 </div>
               </div>
 
-              <!-- Outros -->
-              <div class="bonus-card reveal d3">
+              <div class="bonus-card reveal reveal-right d3">
                 <div class="bonus-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
@@ -370,7 +418,7 @@
                 </div>
                 <div>
                   <h4 style="font-weight:700;font-size:1.05rem;color:var(--light);margin-bottom:4px;">Entre outros profissionais</h4>
-                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">ENTRE OUTROS PROFISSIONAIS QUE FAZEM PARTE DO NOSSO NEGÓCIO</p>
+                  <p class="text-muted" style="font-size:0.9rem;line-height:1.6;">ENTRE OUTROS PROFISSIONAIS QUE PODEM AGREGAR VALOR AO SEU NEGÓCIO.</p>
                 </div>
               </div>
 
@@ -386,7 +434,7 @@
       <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:420px;height:220px;background:rgba(0,102,255,0.08);border-radius:50%;filter:blur(90px);pointer-events:none;"></div>
 
       <div class="container-sm" style="position:relative;z-index:1;">
-        <div style="background:var(--darker);border:1px solid rgba(0,102,255,0.5);border-radius:24px;padding:clamp(20px,3vw,32px);text-align:center;box-shadow:0 0 60px rgba(0,102,255,0.18);">
+        <div style="background:var(--darker);border:1px solid #0066ff80;border-radius:24px;padding:clamp(20px,3vw,32px);text-align:center;box-shadow:0 0 60px rgba(0,102,255,0.18);" class="reveal reveal-scale">
 
           <div style="display:inline-flex;align-items:center;gap:12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);padding:8px 16px;border-radius:999px;margin-bottom:18px;">
             <span style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.92);font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;">
@@ -399,11 +447,9 @@
           <h2 style="font-size:clamp(1.4rem,3vw,2rem);font-weight:700;color:var(--light);margin-bottom:8px;">LISTA DE FORNECEDORES</h2>
           <p class="text-faint" style="margin-bottom:20px;font-size:0.92rem;">+ BÔNUS EXCLUSIVO</p>
 
-          <!-- BLOCO DE PREÇO com classes dedicadas -->
           <div style="margin-bottom:4px;">
             <span class="price-old">DE <span>R$ 700,00</span></span>
             <span class="price-new">R$ 297,90</span>
-            <span class="price-label">PAGAMENTO ÚNICO</span>
           </div>
 
           <p class="text-faint" style="font-size:0.82rem;margin-bottom:24px;margin-top:8px;">pagamento único · entrega imediata</p>
@@ -432,7 +478,7 @@
     <!-- ====== FINAL CTA ====== -->
     <section style="padding:80px 0;">
       <img class="lista-image" src="listaCompleta.png" alt="Lista completa" style="width:100%;max-width:860px;height:auto;display:block;margin:0 auto;" />
-      <div class="reveal d4 final-cta" style="display:flex;justify-content:center;margin-top:-70px;">
+      <div class="reveal d4 final-cta" style="display:flex;justify-content:center;margin-top:24px;">
         <a href="#comprar" class="btn-blue pulse" style="font-size:1rem;padding:18px 32px;max-width:480px;width:auto;display:inline-flex;justify-content:center;min-width:0;">
           QUERO A LISTA AGORA
           <i class="fa-solid fa-arrow-right"></i>
@@ -463,7 +509,7 @@
           });
         }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
 
-        document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+        document.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale").forEach((el) => observer.observe(el));
 
         const timerElement = document.getElementById("fakeTimer");
         const offerTimer = document.getElementById("offerTimer");

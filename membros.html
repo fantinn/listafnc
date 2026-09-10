@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Minha lista de fornecedores</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="area.css" />
+
+    <style>
+      body { padding-top: 64px; }
+
+      .topo {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 120;
+        height: 64px; display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; padding: 0 20px;
+        background: rgba(3,4,6,0.92);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(14px);
+      }
+      .topo img { height: 30px; width: auto; }
+      .topo .acoes { display: flex; align-items: center; gap: 10px; }
+      .topo .quem {
+        font-size: 0.72rem; color: rgba(232,240,255,0.5);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 32vw;
+      }
+
+      .conteudo { position: relative; z-index: 10; max-width: 980px; margin: 0 auto; padding: 20px 20px 80px; }
+
+      /* Fundo solido, nao gradiente: com os chips quebrando em duas linhas o
+         gradiente deixava o conteudo de baixo aparecer por tras da barra. */
+      .busca-area {
+        position: sticky; top: 64px; z-index: 100;
+        padding: 16px 0 14px; margin-bottom: 4px;
+        background: var(--dark);
+        box-shadow: 0 10px 20px -12px rgba(0,0,0,0.9);
+      }
+      .busca { position: relative; }
+      .busca i {
+        position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+        color: rgba(232,240,255,0.35); font-size: 0.9rem;
+      }
+      .busca input {
+        width: 100%; padding: 15px 16px 15px 44px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 12px; color: var(--light);
+        font-family: "Inter", sans-serif; font-size: 0.95rem;
+      }
+      .busca input:focus { outline: none; border-color: var(--blue); background: rgba(0,102,255,0.08); }
+      .busca input::placeholder { color: rgba(232,240,255,0.28); }
+
+      .filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .chip {
+        padding: 7px 14px; border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: rgba(232,240,255,0.7);
+        font-family: "Inter", sans-serif;
+        font-size: 0.72rem; letter-spacing: 0.06em; cursor: pointer;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+      }
+      .chip:hover { background: rgba(255,255,255,0.1); }
+      .chip.ativo { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 600; }
+
+      .contagem { margin: 18px 0 14px; font-size: 0.75rem; letter-spacing: 0.1em; color: rgba(232,240,255,0.4); text-transform: uppercase; }
+
+      .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+      .card {
+        display: flex; flex-direction: column; gap: 10px;
+        padding: 18px; border-radius: 14px;
+        background: var(--darker);
+        border: 1px solid rgba(255,255,255,0.09);
+        transition: border-color 0.2s, transform 0.2s;
+      }
+      .card:hover { border-color: rgba(0,102,255,0.45); transform: translateY(-2px); }
+      .card h2 { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+      .card .categoria {
+        align-self: flex-start; padding: 4px 10px; border-radius: 6px;
+        background: rgba(0,102,255,0.16); color: var(--sky);
+        font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
+      }
+      .card .local { font-size: 0.78rem; color: rgba(232,240,255,0.5); }
+      .card .obs { font-size: 0.8rem; line-height: 1.5; color: rgba(232,240,255,0.65); }
+      .card .contatos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+      .card .contatos a {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 14px; border-radius: 9px;
+        font-size: 0.78rem; font-weight: 600; text-decoration: none;
+        transition: filter 0.15s;
+      }
+      .card .contatos a:hover { filter: brightness(1.15); }
+      .zap { background: rgba(37,211,102,0.16); color: #4ade80; }
+      .insta { background: rgba(255,255,255,0.07); color: rgba(232,240,255,0.8); }
+
+      .estado {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 14px; text-align: center; min-height: 45vh; padding: 40px 24px;
+        color: rgba(232,240,255,0.6); font-size: 0.9rem; line-height: 1.6;
+      }
+      .estado i { font-size: 1.6rem; color: var(--blue); }
+      .estado.erro i { color: #f87171; }
+
+      .aviso { margin-top: 40px; text-align: center; font-size: 0.72rem; line-height: 1.6; color: rgba(232,240,255,0.3); }
+
+      @media (max-width: 640px) {
+        .topo .quem { display: none; }
+        .grade { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+
+  <body class="grid-bg">
+    <header class="topo">
+      <img src="logo.png" alt="Lista de Fornecedores" />
+      <div class="acoes">
+        <span class="quem" id="quem"></span>
+        <a class="btn-ghost" id="linkAdmin" href="admin.html" hidden><i class="fa-solid fa-sliders"></i> Editar</a>
+        <button class="btn-ghost" id="sair" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
+      </div>
+    </header>
+
+    <div class="conteudo">
+      <div class="estado" id="estado">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+        <span id="estadoTexto">Carregando sua lista...</span>
+      </div>
+
+      <div id="painel" hidden>
+        <div class="busca-area">
+          <div class="busca">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="search" id="busca" placeholder="Buscar por nome, categoria, cidade..." autocomplete="off" />
+          </div>
+          <div class="filtros" id="filtros"></div>
+        </div>
+
+        <p class="contagem" id="contagem"></p>
+        <div class="grade" id="grade"></div>
+
+        <p class="aviso">Lista de uso pessoal e intransferível, vinculada ao seu e-mail de compra.</p>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/+esm";
+      import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, WHATSAPP } from "./supabase-config.js";
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+      const estado = document.getElementById("estado");
+      const estadoTexto = document.getElementById("estadoTexto");
+      const painel = document.getElementById("painel");
+      const grade = document.getElementById("grade");
+      const contagem = document.getElementById("contagem");
+      const filtros = document.getElementById("filtros");
+      const campoBusca = document.getElementById("busca");
+
+      function falhar(mensagem) {
+        painel.hidden = true;
+        estado.classList.add("erro");
+        estado.querySelector("i").className = "fa-solid fa-triangle-exclamation";
+        estadoTexto.innerHTML =
+          mensagem +
+          '<br /><br /><a href="' + WHATSAPP + '" target="_blank" rel="noopener" style="color:var(--sky);">Falar com o suporte</a>';
+        estado.hidden = false;
+      }
+
+      // 1. getSession so le o que esta guardado no navegador; getUser confere
+      //    com o servidor, senao uma conta revogada fica presa numa tela de erro.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.replace("login.html");
+        throw new Error("sem sessao");
+      }
+
+      const { data: { user }, error: erroUsuario } = await supabase.auth.getUser();
+      if (erroUsuario || !user) {
+        await supabase.auth.signOut();
+        window.location.replace("login.html");
+        throw new Error("sessao invalida");
+      }
+      document.getElementById("quem").textContent = user.email;
+
+      document.getElementById("sair").addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.replace("login.html");
+      });
+
+      // 2. Admin ganha o atalho para o painel de edicao.
+      const { data: perfil } = await supabase
+        .from("membros")
+        .select("admin")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (perfil?.admin) document.getElementById("linkAdmin").hidden = false;
+
+      supabase
+        .from("membros")
+        .update({ ultimo_acesso: new Date().toISOString() })
+        .eq("id", user.id)
+        .then(() => {}, () => {});
+
+      // Projeto no plano free hiberna: a primeira chamada depois de um tempo
+      // parado pode voltar 5xx. Vale insistir antes de desistir.
+      async function insistir(acao, tentativas = 3) {
+        let ultimoErro;
+        for (let i = 0; i < tentativas; i++) {
+          try {
+            return await acao();
+          } catch (e) {
+            ultimoErro = e;
+            await new Promise((r) => setTimeout(r, 800 * (i + 1)));
+          }
+        }
+        throw ultimoErro;
+      }
+
+      // 3. Busca os fornecedores. A RLS ja limita aos ativos e a quem e membro.
+      let fornecedores = [];
+      try {
+        fornecedores = await insistir(async () => {
+          const { data, error } = await supabase
+            .from("fornecedores")
+            .select("nome, categoria, telefone, instagram, cidade, estado, observacoes")
+            // Explicito de proposito: a RLS ja esconde os inativos do comprador,
+            // mas o admin enxerga tudo - e aqui a tela e a do comprador.
+            .eq("ativo", true)
+            .order("categoria", { ascending: true, nullsFirst: false })
+            .order("nome", { ascending: true });
+          if (error) throw error;
+          return data ?? [];
+        });
+      } catch (e) {
+        falhar(
+          "Sua conta existe, mas não consta como compra liberada. " +
+          "Se você já pagou, fale com a gente que liberamos na hora."
+        );
+        throw e;
+      }
+
+      let categoriaAtiva = "";
+
+      function normalizar(texto) {
+        return (texto ?? "")
+          .toString()
+          .normalize("NFD")
+          .replace(/\p{Diacritic}/gu, "")
+          .toLowerCase();
+      }
+
+      // Só dígitos: o link do WhatsApp não aceita máscara.
+      function linkWhatsapp(telefone) {
+        const numero = (telefone ?? "").replace(/\D/g, "");
+        if (numero.length < 10) return null;
+        return "https://wa.me/" + (numero.length <= 11 ? "55" + numero : numero);
+      }
+
+      function montarFiltros() {
+        const todas = [...new Set(fornecedores.map((f) => f.categoria).filter(Boolean))].sort();
+        if (todas.length === 0) return;
+        for (const nome of ["Todos", ...todas]) {
+          const chip = document.createElement("button");
+          chip.className = "chip" + (nome === "Todos" ? " ativo" : "");
+          chip.textContent = nome;
+          chip.dataset.categoria = nome === "Todos" ? "" : nome;
+          chip.addEventListener("click", () => {
+            categoriaAtiva = chip.dataset.categoria;
+            filtros.querySelectorAll(".chip").forEach((c) => c.classList.remove("ativo"));
+            chip.classList.add("ativo");
+            render();
+          });
+          filtros.appendChild(chip);
+        }
+      }
+
+      // Monta por DOM, nunca por innerHTML: o conteudo vem do banco e nao
+      // pode virar HTML executavel dentro da pagina.
+      function montarCard(f) {
+        const card = document.createElement("article");
+        card.className = "card";
+
+        if (f.categoria) {
+          const cat = document.createElement("span");
+          cat.className = "categoria";
+          cat.textContent = f.categoria;
+          card.appendChild(cat);
+        }
+
+        const titulo = document.createElement("h2");
+        titulo.textContent = f.nome;
+        card.appendChild(titulo);
+
+        const lugar = [f.cidade, f.estado].filter(Boolean).join(" - ");
+        if (lugar) {
+          const local = document.createElement("p");
+          local.className = "local";
+          local.textContent = lugar;
+          card.appendChild(local);
+        }
+
+        if (f.observacoes) {
+          const obs = document.createElement("p");
+          obs.className = "obs";
+          obs.textContent = f.observacoes;
+          card.appendChild(obs);
+        }
+
+        const contatos = document.createElement("div");
+        contatos.className = "contatos";
+
+        const zap = linkWhatsapp(f.telefone);
+        if (zap) {
+          const a = document.createElement("a");
+          a.className = "zap";
+          a.href = zap;
+          a.target = "_blank";
+          a.rel = "noopener";
+          const icone = document.createElement("i");
+          icone.className = "fa-brands fa-whatsapp";
+          a.append(icone, f.telefone);
+          contatos.appendChild(a);
+        }
+
+        if (f.instagram) {
+          const perfil = f.instagram.replace(/^@/, "").trim();
+          const a = document.createElement("a");
+          a.className = "insta";
+          a.href = "https://instagram.com/" + encodeURIComponent(perfil);
+          a.target = "_blank";
+          a.rel = "noopener";
+          const icone = document.createElement("i");
+          icone.className = "fa-brands fa-instagram";
+          a.append(icone, "@" + perfil);
+          contatos.appendChild(a);
+        }
+
+        if (contatos.children.length > 0) card.appendChild(contatos);
+        return card;
+      }
+
+      function render() {
+        const termo = normalizar(campoBusca.value.trim());
+        const visiveis = fornecedores.filter((f) => {
+          if (categoriaAtiva && f.categoria !== categoriaAtiva) return false;
+          if (!termo) return true;
+          const alvo = normalizar(
+            [f.nome, f.categoria, f.cidade, f.estado, f.observacoes, f.instagram].join(" ")
+          );
+          return termo.split(/\s+/).every((parte) => alvo.includes(parte));
+        });
+
+        contagem.textContent =
+          visiveis.length === fornecedores.length
+            ? `${fornecedores.length} fornecedores`
+            : `${visiveis.length} de ${fornecedores.length} fornecedores`;
+
+        grade.replaceChildren();
+
+        if (visiveis.length === 0) {
+          const vazio = document.createElement("p");
+          vazio.className = "obs";
+          vazio.style.color = "rgba(232,240,255,0.5)";
+          vazio.textContent = "Nenhum fornecedor encontrado para essa busca.";
+          grade.appendChild(vazio);
+          return;
+        }
+
+        for (const f of visiveis) grade.appendChild(montarCard(f));
+      }
+
+      if (fornecedores.length === 0) {
+        estado.querySelector("i").className = "fa-solid fa-clock";
+        estadoTexto.textContent = "A lista está sendo atualizada. Volte em instantes.";
+      } else {
+        estado.hidden = true;
+        painel.hidden = false;
+        montarFiltros();
+        render();
+        campoBusca.addEventListener("input", render);
+      }
+    </script>
+  </body>
+</html>

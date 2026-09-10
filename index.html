@@ -52,6 +52,25 @@
         font-size: 1rem; font-weight: 800; letter-spacing: 0.2em;
       }
 
+      /* Acesso de quem ja comprou - discreto, nao compete com o funil */
+      .acesso-topo {
+        position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+        z-index: 2;
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 8px 12px; border-radius: 9px;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.14);
+        color: rgba(255,255,255,0.82);
+        font-size: 0.66rem; font-weight: 600; letter-spacing: 0.12em;
+        text-decoration: none; white-space: nowrap;
+        transition: background 0.2s, color 0.2s;
+      }
+      .acesso-topo:hover { background: rgba(0,102,255,0.3); color: #fff; }
+      @media (max-width: 720px) {
+        .acesso-topo span { display: none; }
+        .acesso-topo { right: 10px; padding: 8px 10px; }
+      }
+
       .font-display { font-family: "Space Grotesk", sans-serif; }
 
       .grid-bg::before {
@@ -291,6 +310,9 @@
           <strong id="fakeTimer" class="timer-value">30:00</strong>
         </div>
       </div>
+      <a href="login.html" class="acesso-topo" title="Área de quem já comprou">
+        <i class="fa-solid fa-lock-open"></i><span>JÁ COMPREI</span>
+      </a>
     </nav>
 
     <div style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:800px;height:350px;background:radial-gradient(circle,rgba(0,102,255,0.07),transparent 70%);filter:blur(60px);pointer-events:none;z-index:0;border-radius:50%;"></div>
@@ -496,6 +518,11 @@
     <!-- FOOTER -->
     <footer>
       <div class="container" style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;">
+        <p style="font-size:0.78rem;">
+          <a href="login.html" style="color:var(--sky);text-decoration:none;letter-spacing:0.08em;">
+            <i class="fa-solid fa-lock-open"></i> JÁ COMPREI &mdash; ACESSAR MINHA LISTA
+          </a>
+        </p>
         <p class="text-faint" style="font-size:0.78rem;">Desenvolvido por <a href="https://www.instagram.com/fantinnco/" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;"><span style="color:#fff;">fantin</span><strong style="font-weight:900;color:var(--blue);">CO</strong></a></p>
       </div>
     </footer>

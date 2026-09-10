@@ -1,0 +1,12 @@
+{
+  "name": "listafnc-admin",
+  "private": true,
+  "type": "module",
+  "description": "Scripts locais de administracao da area de membros. Nao faz parte do site publicado.",
+  "scripts": {
+    "criar-membro": "node criar-membro.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0"
+  }
+}

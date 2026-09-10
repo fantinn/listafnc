@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Editar lista | Lista de Fornecedores</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="area.css" />
+
+    <style>
+      body { padding-top: 64px; }
+
+      .topo {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 120;
+        height: 64px; display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; padding: 0 20px;
+        background: rgba(3,4,6,0.92);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(14px);
+      }
+      .topo img { height: 30px; width: auto; }
+      .topo .acoes { display: flex; align-items: center; gap: 10px; }
+      .selo {
+        padding: 4px 10px; border-radius: 6px;
+        background: rgba(0,102,255,0.18); color: var(--sky);
+        font-size: 0.64rem; letter-spacing: 0.12em; font-weight: 700;
+      }
+
+      .conteudo { position: relative; z-index: 10; max-width: 1000px; margin: 0 auto; padding: 24px 20px 80px; }
+
+      h1 { font-size: 1.2rem; margin-bottom: 4px; }
+      .sub { font-size: 0.8rem; color: rgba(232,240,255,0.5); margin-bottom: 24px; }
+
+      .painel {
+        background: var(--darker);
+        border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 14px; padding: 20px; margin-bottom: 22px;
+      }
+      .painel h2 { font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(232,240,255,0.6); margin-bottom: 16px; }
+
+      .campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+      .campo { display: flex; flex-direction: column; gap: 6px; }
+      .campo.largo { grid-column: 1 / -1; }
+      label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(232,240,255,0.55); }
+      input, textarea, select {
+        width: 100%; padding: 12px 14px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px; color: var(--light);
+        font-family: "Inter", sans-serif; font-size: 0.9rem;
+      }
+      textarea { resize: vertical; min-height: 68px; }
+      input:focus, textarea:focus, select:focus { outline: none; border-color: var(--blue); background: rgba(0,102,255,0.08); }
+      input::placeholder, textarea::placeholder { color: rgba(232,240,255,0.25); }
+
+      .barra-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; }
+      .btn-blue { padding: 13px 26px; font-size: 0.9rem; }
+      .btn-perigo {
+        padding: 10px 16px; border-radius: 10px; cursor: pointer;
+        background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3);
+        color: #fca5a5; font-size: 0.78rem; font-weight: 600;
+      }
+      .btn-perigo:hover { background: rgba(248,113,113,0.22); }
+
+      .busca { position: relative; margin-bottom: 16px; }
+      .busca i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: rgba(232,240,255,0.35); font-size: 0.85rem; }
+      .busca input { padding-left: 40px; }
+
+      .linha {
+        display: flex; align-items: flex-start; gap: 14px;
+        padding: 14px 16px; border-radius: 11px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        margin-bottom: 8px;
+      }
+      .linha.inativo { opacity: 0.45; }
+      .linha .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+      .linha .nome { font-weight: 600; font-size: 0.92rem; }
+      .linha .meta { font-size: 0.75rem; color: rgba(232,240,255,0.5); }
+      .linha .botoes { display: flex; gap: 6px; flex-shrink: 0; }
+      .linha .botoes button {
+        width: 34px; height: 34px; border-radius: 8px; cursor: pointer;
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+        color: rgba(232,240,255,0.75); font-size: 0.8rem;
+      }
+      .linha .botoes button:hover { background: rgba(0,102,255,0.28); color: #fff; }
+      .linha .botoes button.remover:hover { background: rgba(248,113,113,0.28); color: #fff; }
+
+      .recado {
+        display: none; align-items: center; gap: 10px;
+        padding: 12px 16px; border-radius: 10px; margin-bottom: 16px;
+        font-size: 0.82rem; line-height: 1.45;
+      }
+      .recado.visivel { display: flex; }
+      .recado.ok { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: #86efac; }
+      .recado.ruim { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; }
+
+      .estado {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 14px; text-align: center; min-height: 55vh; padding: 40px 24px;
+        color: rgba(232,240,255,0.6); font-size: 0.9rem; line-height: 1.6;
+      }
+      .estado i { font-size: 1.6rem; color: var(--blue); }
+      .estado.erro i { color: #f87171; }
+
+      /* Sem isto o cabecalho quebra palavra no meio em telas estreitas
+         ("ADMI N", "SA IR"). */
+      .topo .btn-ghost, .selo { white-space: nowrap; }
+      @media (max-width: 720px) {
+        .topo { padding: 0 12px; gap: 8px; }
+        .topo .rotulo { display: none; }
+        .topo .btn-ghost { padding: 10px 12px; }
+      }
+    </style>
+  </head>
+
+  <body class="grid-bg">
+    <header class="topo">
+      <img src="logo.png" alt="Lista de Fornecedores" />
+      <div class="acoes">
+        <span class="selo">ADMIN</span>
+        <a class="btn-ghost" href="membros.html" title="Ver como comprador"><i class="fa-solid fa-eye"></i><span class="rotulo"> Ver como comprador</span></a>
+        <button class="btn-ghost" id="sair" type="button" title="Sair"><i class="fa-solid fa-arrow-right-from-bracket"></i><span class="rotulo"> Sair</span></button>
+      </div>
+    </header>
+
+    <div class="conteudo">
+      <div class="estado" id="estado">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+        <span id="estadoTexto">Conferindo seu acesso...</span>
+      </div>
+
+      <div id="painelAdmin" hidden>
+        <h1>Editar lista de fornecedores</h1>
+        <p class="sub">Toda alteração aparece para os compradores no acesso seguinte. Não precisa publicar nada.</p>
+
+        <div class="recado" id="recado"><i id="recadoIcone"></i><span id="recadoTexto"></span></div>
+
+        <form class="painel" id="form">
+          <h2 id="tituloForm">Novo fornecedor</h2>
+          <div class="campos">
+            <div class="campo">
+              <label for="nome">Nome *</label>
+              <input id="nome" required placeholder="Distribuidora Exemplo" />
+            </div>
+            <div class="campo">
+              <label for="categoria">Categoria</label>
+              <input id="categoria" list="categorias" placeholder="Calçados" />
+              <datalist id="categorias"></datalist>
+            </div>
+            <div class="campo">
+              <label for="telefone">WhatsApp</label>
+              <input id="telefone" placeholder="27 99999-9999" />
+            </div>
+            <div class="campo">
+              <label for="instagram">Instagram</label>
+              <input id="instagram" placeholder="@perfil" />
+            </div>
+            <div class="campo">
+              <label for="cidade">Cidade</label>
+              <input id="cidade" placeholder="Vitória" />
+            </div>
+            <div class="campo">
+              <label for="estado">UF</label>
+              <input id="estado" maxlength="2" placeholder="ES" />
+            </div>
+            <div class="campo largo">
+              <label for="observacoes">Observações</label>
+              <textarea id="observacoes" placeholder="Pedido mínimo, prazo de entrega, condições..."></textarea>
+            </div>
+          </div>
+          <div class="barra-form">
+            <button type="submit" class="btn-blue" id="salvar"><i class="fa-solid fa-check"></i> Adicionar</button>
+            <button type="button" class="btn-ghost" id="cancelar" hidden>Cancelar edição</button>
+          </div>
+        </form>
+
+        <div class="painel">
+          <h2 id="tituloLista">Fornecedores</h2>
+          <div class="busca">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="search" id="busca" placeholder="Filtrar..." autocomplete="off" />
+          </div>
+          <div id="lista"></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/+esm";
+      import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./supabase-config.js";
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+      const estado = document.getElementById("estado");
+      const estadoTexto = document.getElementById("estadoTexto");
+      const painelAdmin = document.getElementById("painelAdmin");
+      const lista = document.getElementById("lista");
+      const form = document.getElementById("form");
+      const recado = document.getElementById("recado");
+      const campoBusca = document.getElementById("busca");
+      const btCancelar = document.getElementById("cancelar");
+      const btSalvar = document.getElementById("salvar");
+
+      const campos = ["nome", "categoria", "telefone", "instagram", "cidade", "estado", "observacoes"];
+      const el = Object.fromEntries(campos.map((c) => [c, document.getElementById(c)]));
+
+      let editandoId = null;
+      let fornecedores = [];
+
+      function avisar(texto, ok = true) {
+        recado.className = "recado visivel " + (ok ? "ok" : "ruim");
+        document.getElementById("recadoIcone").className =
+          ok ? "fa-solid fa-circle-check" : "fa-solid fa-triangle-exclamation";
+        document.getElementById("recadoTexto").textContent = texto;
+        if (ok) setTimeout(() => recado.classList.remove("visivel"), 4000);
+      }
+
+      // 1. Precisa de sessao valida no servidor, nao so no navegador.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.replace("login.html");
+        throw new Error("sem sessao");
+      }
+      const { data: { user }, error: erroUsuario } = await supabase.auth.getUser();
+      if (erroUsuario || !user) {
+        await supabase.auth.signOut();
+        window.location.replace("login.html");
+        throw new Error("sessao invalida");
+      }
+
+      document.getElementById("sair").addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.replace("login.html");
+      });
+
+      // 2. Esconder a tela de quem nao e admin e so cortesia visual: quem
+      //    manda e a RLS, que recusa escrita de qualquer nao-admin.
+      const { data: perfil } = await supabase
+        .from("membros")
+        .select("admin")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!perfil?.admin) {
+        window.location.replace("membros.html");
+        throw new Error("nao e admin");
+      }
+
+      estado.hidden = true;
+      painelAdmin.hidden = false;
+
+      // 3. Carrega tudo, inclusive inativos (a politica de admin permite).
+      async function carregar() {
+        const { data, error } = await supabase
+          .from("fornecedores")
+          .select("*")
+          .order("categoria", { ascending: true, nullsFirst: false })
+          .order("nome", { ascending: true });
+
+        if (error) {
+          avisar("Não consegui carregar a lista: " + error.message, false);
+          return;
+        }
+        fornecedores = data ?? [];
+        preencherCategorias();
+        render();
+      }
+
+      function preencherCategorias() {
+        const datalist = document.getElementById("categorias");
+        datalist.replaceChildren();
+        for (const c of [...new Set(fornecedores.map((f) => f.categoria).filter(Boolean))].sort()) {
+          const opcao = document.createElement("option");
+          opcao.value = c;
+          datalist.appendChild(opcao);
+        }
+      }
+
+      function normalizar(t) {
+        return (t ?? "").toString().normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+      }
+
+      function render() {
+        const termo = normalizar(campoBusca.value.trim());
+        const visiveis = fornecedores.filter((f) =>
+          !termo || normalizar([f.nome, f.categoria, f.cidade, f.estado, f.observacoes].join(" ")).includes(termo)
+        );
+
+        document.getElementById("tituloLista").textContent =
+          `Fornecedores (${visiveis.length}${visiveis.length !== fornecedores.length ? " de " + fornecedores.length : ""})`;
+
+        lista.replaceChildren();
+
+        if (visiveis.length === 0) {
+          const vazio = document.createElement("p");
+          vazio.style.cssText = "font-size:0.85rem;color:rgba(232,240,255,0.45);padding:8px 0;";
+          vazio.textContent = fornecedores.length === 0
+            ? "Nenhum fornecedor cadastrado ainda. Use o formulário acima."
+            : "Nada encontrado para esse filtro.";
+          lista.appendChild(vazio);
+          return;
+        }
+
+        for (const f of visiveis) lista.appendChild(montarLinha(f));
+      }
+
+      // Monta por DOM, nunca innerHTML: o texto vem do banco.
+      function montarLinha(f) {
+        const linha = document.createElement("div");
+        linha.className = "linha" + (f.ativo ? "" : " inativo");
+
+        const info = document.createElement("div");
+        info.className = "info";
+
+        const nome = document.createElement("span");
+        nome.className = "nome";
+        nome.textContent = f.nome + (f.ativo ? "" : "  (oculto)");
+        info.appendChild(nome);
+
+        const meta = document.createElement("span");
+        meta.className = "meta";
+        meta.textContent = [f.categoria, [f.cidade, f.estado].filter(Boolean).join(" - "), f.telefone]
+          .filter(Boolean).join("  •  ") || "sem dados de contato";
+        info.appendChild(meta);
+
+        const botoes = document.createElement("div");
+        botoes.className = "botoes";
+
+        const editar = document.createElement("button");
+        editar.type = "button";
+        editar.title = "Editar";
+        editar.innerHTML = '<i class="fa-solid fa-pen"></i>';
+        editar.addEventListener("click", () => entrarEmEdicao(f));
+
+        const alternar = document.createElement("button");
+        alternar.type = "button";
+        alternar.title = f.ativo ? "Ocultar dos compradores" : "Mostrar aos compradores";
+        alternar.innerHTML = f.ativo ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+        alternar.addEventListener("click", () => alternarAtivo(f));
+
+        const remover = document.createElement("button");
+        remover.type = "button";
+        remover.className = "remover";
+        remover.title = "Remover";
+        remover.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        remover.addEventListener("click", () => apagar(f));
+
+        botoes.append(editar, alternar, remover);
+        linha.append(info, botoes);
+        return linha;
+      }
+
+      function entrarEmEdicao(f) {
+        editandoId = f.id;
+        for (const c of campos) el[c].value = f[c] ?? "";
+        document.getElementById("tituloForm").textContent = "Editando: " + f.nome;
+        btSalvar.innerHTML = '<i class="fa-solid fa-check"></i> Salvar alterações';
+        btCancelar.hidden = false;
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function limparFormulario() {
+        editandoId = null;
+        form.reset();
+        document.getElementById("tituloForm").textContent = "Novo fornecedor";
+        btSalvar.innerHTML = '<i class="fa-solid fa-check"></i> Adicionar';
+        btCancelar.hidden = true;
+      }
+
+      btCancelar.addEventListener("click", limparFormulario);
+
+      form.addEventListener("submit", async (evento) => {
+        evento.preventDefault();
+
+        const dados = {};
+        for (const c of campos) {
+          const valor = el[c].value.trim();
+          dados[c] = valor === "" ? null : valor;
+        }
+        if (!dados.nome) {
+          avisar("O nome é obrigatório.", false);
+          return;
+        }
+        if (dados.estado) dados.estado = dados.estado.toUpperCase();
+
+        btSalvar.disabled = true;
+
+        const { error } = editandoId
+          ? await supabase.from("fornecedores").update(dados).eq("id", editandoId)
+          : await supabase.from("fornecedores").insert(dados);
+
+        btSalvar.disabled = false;
+
+        if (error) {
+          avisar("Não consegui salvar: " + error.message, false);
+          return;
+        }
+
+        avisar(editandoId ? "Alterações salvas." : "Fornecedor adicionado.");
+        limparFormulario();
+        await carregar();
+      });
+
+      async function alternarAtivo(f) {
+        const { error } = await supabase
+          .from("fornecedores")
+          .update({ ativo: !f.ativo })
+          .eq("id", f.id);
+        if (error) {
+          avisar("Não consegui alterar: " + error.message, false);
+          return;
+        }
+        avisar(f.ativo ? "Oculto dos compradores." : "Visível para os compradores.");
+        await carregar();
+      }
+
+      async function apagar(f) {
+        if (!confirm(`Remover "${f.nome}" definitivamente?\n\nSe for temporário, use o botão de ocultar.`)) return;
+        const { error } = await supabase.from("fornecedores").delete().eq("id", f.id);
+        if (error) {
+          avisar("Não consegui remover: " + error.message, false);
+          return;
+        }
+        avisar("Fornecedor removido.");
+        await carregar();
+      }
+
+      campoBusca.addEventListener("input", render);
+      await carregar();
+    </script>
+  </body>
+</html>

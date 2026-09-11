@@ -32,8 +32,8 @@
 
       .conteudo { position: relative; z-index: 10; max-width: 980px; margin: 0 auto; padding: 20px 20px 80px; }
 
-      /* Fundo solido, nao gradiente: com os chips quebrando em duas linhas o
-         gradiente deixava o conteudo de baixo aparecer por tras da barra. */
+      /* Fundo solido, nao gradiente: com gradiente o conteudo que rola por
+         baixo aparecia atraves da barra fixa. */
       .busca-area {
         position: sticky; top: 64px; z-index: 100;
         padding: 16px 0 14px; margin-bottom: 4px;
@@ -55,45 +55,76 @@
       .busca input:focus { outline: none; border-color: var(--blue); background: rgba(0,102,255,0.08); }
       .busca input::placeholder { color: rgba(232,240,255,0.28); }
 
-      /* Uma faixa só, com rolagem lateral. Com 10 categorias o flex-wrap
-         jogava os chips em três linhas e deixava tudo desalinhado. */
-      .filtros {
-        display: flex; gap: 8px; margin-top: 14px;
-        overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
-        scroll-behavior: smooth;
-      }
-      .filtros::-webkit-scrollbar { display: none; }
-
-      /* O fade só entra quando sobra conteúdo para o lado (classe posta
-         pelo JS), senão o último chip apareceria apagado à toa. */
-      .filtros.fade-dir {
-        mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
-        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+      /* Vista 1: os retângulos de categoria. */
+      .categorias {
+        display: grid; gap: 14px; margin-top: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
       }
 
-      .chip {
-        flex-shrink: 0;
-        display: inline-flex; align-items: center; gap: 7px;
-        padding: 9px 14px; border-radius: 10px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.1);
-        color: rgba(232,240,255,0.65);
-        font-family: "Inter", sans-serif;
-        font-size: 0.76rem; font-weight: 500; white-space: nowrap;
-        cursor: pointer;
-        transition: background 0.15s, color 0.15s, border-color 0.15s;
+      .tile {
+        position: relative; overflow: hidden;
+        display: flex; flex-direction: column; justify-content: flex-end;
+        min-height: 152px; padding: 18px;
+        border-radius: 16px;
+        background: var(--darker);
+        border: 1px solid rgba(255,255,255,0.09);
+        color: var(--light);
+        font-family: "Inter", sans-serif; text-align: left; cursor: pointer;
+        transition: transform 0.18s, border-color 0.18s;
       }
-      .chip:hover { background: rgba(255,255,255,0.09); color: rgba(232,240,255,0.92); }
-      .chip .qtd {
-        font-size: 0.68rem; font-weight: 600;
-        color: rgba(232,240,255,0.38);
-        font-variant-numeric: tabular-nums;
+      /* Brilho no canto superior, atrás do conteúdo. */
+      .tile::before {
+        content: "";
+        position: absolute; inset: 0; pointer-events: none;
+        background: radial-gradient(120% 90% at 100% 0%, rgba(0,102,255,0.25), transparent 62%);
+        transition: opacity 0.18s; opacity: 0.85;
       }
-      .chip.ativo {
-        background: var(--blue); border-color: var(--blue);
-        color: #fff; font-weight: 600;
+      .tile:hover { transform: translateY(-3px); border-color: rgba(0,102,255,0.55); }
+      .tile:hover::before { opacity: 1; }
+      .tile:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+      .tile .icone {
+        position: absolute; top: 16px; left: 18px;
+        font-size: 1.55rem; color: var(--sky);
       }
-      .chip.ativo .qtd { color: rgba(255,255,255,0.72); }
+      .tile .nome {
+        position: relative;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.05rem; font-weight: 700; line-height: 1.25;
+        /* Anula o "anywhere" global: só quebra palavra que não couber
+           sozinha na linha, senão virava "Bermuda / s Street". */
+        overflow-wrap: break-word;
+      }
+      .tile .qtd {
+        position: relative; margin-top: 6px;
+        font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+        color: rgba(232,240,255,0.45);
+      }
+
+      /* Os bônus fecham a grade e ganham destaque próprio. */
+      .tile.bonus { border-color: rgba(245,158,11,0.32); }
+      .tile.bonus::before {
+        background: radial-gradient(120% 90% at 100% 0%, rgba(245,158,11,0.26), transparent 62%);
+      }
+      .tile.bonus:hover { border-color: rgba(245,158,11,0.65); }
+      .tile.bonus .icone { color: #fbbf24; }
+
+      /* Vista 2: cabeçalho da lista de contatos. */
+      .voltar {
+        display: inline-flex; align-items: center; gap: 9px;
+        padding: 10px 15px; margin-top: 20px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px; color: rgba(232,240,255,0.8);
+        font-family: "Inter", sans-serif; font-size: 0.78rem; cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+      }
+      .voltar:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+      .titulo-vista {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.3rem; font-weight: 700; margin: 18px 0 0;
+      }
 
       .contagem { margin: 18px 0 14px; font-size: 0.75rem; letter-spacing: 0.1em; color: rgba(232,240,255,0.4); text-transform: uppercase; }
       /* Sem a linha de contagem, a grade precisa da folga que era dela. */
@@ -115,6 +146,9 @@
         background: rgba(0,102,255,0.16); color: var(--sky);
         font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
       }
+      /* Dentro de uma categoria o título já diz qual é; o rótulo em cada
+         card só repetiria. Na busca ele volta, porque ali mistura tudo. */
+      .grade.sem-rotulo .card .categoria { display: none; }
       .card .local { font-size: 0.78rem; color: rgba(232,240,255,0.5); }
       .card .obs { font-size: 0.8rem; line-height: 1.5; color: rgba(232,240,255,0.65); }
       .card .contatos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
@@ -150,6 +184,14 @@
       @media (max-width: 640px) {
         .topo .quem { display: none; }
         .grade { grid-template-columns: 1fr; }
+
+        /* Duas colunas: em coluna única só cabiam ~2 categorias na tela e
+           os bônus ficavam a nove rolagens de distância. */
+        .categorias { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .tile { min-height: 132px; padding: 15px; border-radius: 14px; }
+        .tile .icone { top: 13px; left: 15px; font-size: 1.3rem; }
+        .tile .nome { font-size: 0.92rem; }
+        .tile .qtd { font-size: 0.66rem; }
       }
     </style>
   </head>
@@ -180,11 +222,22 @@
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="search" id="busca" placeholder="Buscar por nome, categoria, cidade..." autocomplete="off" />
           </div>
-          <div class="filtros" id="filtros"></div>
         </div>
 
-        <p class="contagem" id="contagem"></p>
-        <div class="grade" id="grade"></div>
+        <!-- Vista 1: escolha da categoria -->
+        <div id="vistaCategorias">
+          <div class="categorias" id="categorias"></div>
+        </div>
+
+        <!-- Vista 2: contatos da categoria escolhida (ou da busca) -->
+        <div id="vistaContatos" hidden>
+          <button class="voltar" id="voltar" type="button">
+            <i class="fa-solid fa-arrow-left"></i> Todas as categorias
+          </button>
+          <h2 class="titulo-vista" id="tituloVista"></h2>
+          <p class="contagem" id="contagem"></p>
+          <div class="grade" id="grade"></div>
+        </div>
 
         <p class="aviso">Lista de uso pessoal e intransferível, vinculada ao seu e-mail de compra.</p>
       </div>
@@ -201,8 +254,11 @@
       const painel = document.getElementById("painel");
       const grade = document.getElementById("grade");
       const contagem = document.getElementById("contagem");
-      const filtros = document.getElementById("filtros");
       const campoBusca = document.getElementById("busca");
+      const categorias = document.getElementById("categorias");
+      const vistaCategorias = document.getElementById("vistaCategorias");
+      const vistaContatos = document.getElementById("vistaContatos");
+      const tituloVista = document.getElementById("tituloVista");
 
       function falhar(mensagem) {
         painel.hidden = true;
@@ -304,50 +360,71 @@
         return "https://wa.me/" + (numero.length <= 11 ? "55" + numero : numero);
       }
 
-      // Mostra o fade da direita só enquanto houver chip escondido pra lá.
-      function atualizarFade() {
-        const sobra = filtros.scrollWidth - filtros.clientWidth;
-        filtros.classList.toggle("fade-dir", sobra > 4 && filtros.scrollLeft < sobra - 4);
+      // Ícone por categoria. Categoria nova criada no admin cai no padrão.
+      const ICONES = {
+        "camisas/bermudas street": "fa-shirt",
+        "pecas de grife": "fa-gem",
+        "pecas de frio": "fa-snowflake",
+        "camisas de time": "fa-futbol",
+        "calcados": "fa-shoe-prints",
+        "acessorios": "fa-glasses",
+        "originais": "fa-certificate",
+        "jeans": "fa-layer-group",
+        "contatos bonus": "fa-star",
+      };
+
+      function ehBonus(categoria) {
+        return normalizar(categoria).includes("bonus");
       }
 
-      function montarFiltros() {
+      function montarCategorias() {
         const porCategoria = new Map();
         for (const f of fornecedores) {
           if (!f.categoria) continue;
           porCategoria.set(f.categoria, (porCategoria.get(f.categoria) ?? 0) + 1);
         }
+        if (porCategoria.size === 0) return;
 
-        const todas = [...porCategoria.keys()].sort();
-        if (todas.length === 0) return;
+        // Alfabética, mas os bônus sempre por último.
+        const ordenadas = [...porCategoria.keys()].sort((a, b) => {
+          if (ehBonus(a) !== ehBonus(b)) return ehBonus(a) ? 1 : -1;
+          return a.localeCompare(b, "pt-BR");
+        });
 
-        for (const nome of ["Todos", ...todas]) {
-          const chip = document.createElement("button");
-          chip.type = "button";
-          chip.className = "chip" + (nome === "Todos" ? " ativo" : "");
-          chip.dataset.categoria = nome === "Todos" ? "" : nome;
+        for (const nome of ordenadas) {
+          const tile = document.createElement("button");
+          tile.type = "button";
+          tile.className = "tile" + (ehBonus(nome) ? " bonus" : "");
+
+          const icone = document.createElement("i");
+          icone.className = "icone fa-solid " + (ICONES[normalizar(nome)] ?? "fa-tag");
 
           const rotulo = document.createElement("span");
-          rotulo.textContent = nome;
+          rotulo.className = "nome";
+          // Espaço de largura zero depois da barra: dá ao navegador um ponto
+          // de quebra legal, senão "Camisas/Bermudas" partia no meio.
+          rotulo.textContent = nome.split("/").join("/\u200B");
 
           const qtd = document.createElement("span");
           qtd.className = "qtd";
-          qtd.textContent = nome === "Todos" ? fornecedores.length : porCategoria.get(nome);
+          const total = porCategoria.get(nome);
+          qtd.textContent = total === 1 ? "1 contato" : `${total} contatos`;
 
-          chip.append(rotulo, qtd);
-          chip.addEventListener("click", () => {
-            categoriaAtiva = chip.dataset.categoria;
-            filtros.querySelectorAll(".chip").forEach((c) => c.classList.remove("ativo"));
-            chip.classList.add("ativo");
-            // Puxa o chip clicado para dentro da faixa visível.
-            chip.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+          tile.append(icone, rotulo, qtd);
+          tile.addEventListener("click", () => {
+            categoriaAtiva = nome;
+            campoBusca.value = "";
             render();
+            window.scrollTo({ top: 0, behavior: "smooth" });
           });
-          filtros.appendChild(chip);
+          categorias.appendChild(tile);
         }
+      }
 
-        atualizarFade();
-        filtros.addEventListener("scroll", atualizarFade, { passive: true });
-        window.addEventListener("resize", atualizarFade);
+      function voltarParaCategorias() {
+        categoriaAtiva = "";
+        campoBusca.value = "";
+        render();
       }
 
       // Monta por DOM, nunca por innerHTML: o conteudo vem do banco e nao
@@ -417,22 +494,35 @@
 
       function render() {
         const termo = normalizar(campoBusca.value.trim());
+        const buscando = termo.length > 0;
+
+        // Sem categoria escolhida e sem busca, mostra a grade de categorias.
+        if (!buscando && !categoriaAtiva) {
+          vistaContatos.hidden = true;
+          vistaCategorias.hidden = false;
+          return;
+        }
+
+        vistaCategorias.hidden = true;
+        vistaContatos.hidden = false;
+
+        // A busca atravessa todas as categorias; a categoria escolhida só
+        // vale enquanto não houver termo digitado.
         const visiveis = fornecedores.filter((f) => {
-          if (categoriaAtiva && f.categoria !== categoriaAtiva) return false;
-          if (!termo) return true;
+          if (!buscando && categoriaAtiva && f.categoria !== categoriaAtiva) return false;
+          if (!buscando) return true;
           const alvo = normalizar(
             [f.nome, f.categoria, f.cidade, f.estado, f.observacoes, f.instagram].join(" ")
           );
           return termo.split(/\s+/).every((parte) => alvo.includes(parte));
         });
 
-        // Sem filtro o total já aparece no chip "Todos", então essa linha
-        // só entra quando a busca ou a categoria reduz o resultado.
-        const filtrando = visiveis.length !== fornecedores.length;
-        contagem.hidden = !filtrando;
-        if (filtrando) {
-          contagem.textContent = `${visiveis.length} de ${fornecedores.length} fornecedores`;
-        }
+        tituloVista.textContent = buscando ? "Resultados da busca" : categoriaAtiva;
+        grade.classList.toggle("sem-rotulo", !buscando);
+
+        contagem.hidden = false;
+        contagem.textContent =
+          visiveis.length === 1 ? "1 contato" : `${visiveis.length} contatos`;
 
         grade.replaceChildren();
 
@@ -454,9 +544,10 @@
       } else {
         estado.hidden = true;
         painel.hidden = false;
-        montarFiltros();
+        montarCategorias();
         render();
         campoBusca.addEventListener("input", render);
+        document.getElementById("voltar").addEventListener("click", voltarParaCategorias);
       }
     </script>
   </body>

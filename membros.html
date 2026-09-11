@@ -13,15 +13,24 @@
     <link rel="stylesheet" href="area.css" />
 
     <style>
+      /* Uma medida so para a barra do topo e para o conteudo. */
+      :root { --largura: 1100px; }
       body { padding-top: 64px; }
 
       .topo {
         position: fixed; top: 0; left: 0; right: 0; z-index: 120;
-        height: 64px; display: flex; align-items: center; justify-content: space-between;
-        gap: 16px; padding: 0 20px;
+        height: 64px;
         background: rgba(3,4,6,0.92);
         border-bottom: 1px solid rgba(255,255,255,0.1);
         backdrop-filter: blur(14px);
+      }
+      /* A barra atravessa a tela, mas o conteudo dela respeita a mesma
+         largura do resto: sem isso, em monitor largo o logo ficava sozinho
+         num canto e o e-mail no outro, sem relacao com a lista no meio. */
+      .topo-interno {
+        height: 100%; width: 100%; max-width: var(--largura); margin: 0 auto;
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; padding: 0 20px;
       }
       .topo img { height: 30px; width: auto; }
       .topo .acoes { display: flex; align-items: center; gap: 10px; }
@@ -30,7 +39,7 @@
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 32vw;
       }
 
-      .conteudo { position: relative; z-index: 10; max-width: 980px; margin: 0 auto; padding: 20px 20px 80px; }
+      .conteudo { position: relative; z-index: 10; max-width: var(--largura); margin: 0 auto; padding: 20px 20px 80px; }
 
       /* Fundo solido, nao gradiente: com gradiente o conteudo que rola por
          baixo aparecia atraves da barra fixa. */
@@ -108,7 +117,7 @@
       }
       .tile:hover .seta { color: var(--sky); transform: translateX(3px); }
       .tile .nome {
-        position: relative;
+        position: relative; display: block;
         font-family: "Space Grotesk", sans-serif;
         font-size: 1.05rem; font-weight: 700; line-height: 1.25;
         /* Anula o "anywhere" global: só quebra palavra que não couber
@@ -116,15 +125,32 @@
         overflow-wrap: break-word;
       }
       .tile .qtd {
-        position: relative; margin-top: 6px;
+        position: relative; display: block; margin-top: 6px;
         font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
         color: rgba(232,240,255,0.45);
       }
 
-      /* Os bônus fecham a grade e ganham destaque próprio. */
-      .tile.bonus { border-color: rgba(245,158,11,0.32); }
+      /* block, nao o inline padrao do span: inline, o nome e a contagem
+         corriam na mesma linha. */
+      .tile .texto { position: relative; display: block; }
+
+      /* Os bônus fecham a grade e ganham destaque próprio. Ocupando a
+         fileira inteira viram o fecho da lista, em vez de um retângulo
+         solto sobrando no canto. */
+      .tile.bonus {
+        grid-column: 1 / -1;
+        flex-direction: row; align-items: center; justify-content: flex-start; gap: 16px;
+        min-height: 0; padding: 20px;
+        border-color: rgba(245,158,11,0.32);
+      }
+      .tile.bonus .icone { position: static; width: 44px; height: 44px; font-size: 1.1rem; }
+      /* order manda a seta para o fim: no DOM ela vem antes do texto, por
+         causa do posicionamento absoluto dos outros tiles. */
+      .tile.bonus .seta { position: static; order: 3; margin-left: auto; }
+      .tile.bonus .texto { order: 2; }
+      /* Deitado, o brilho vem da direita, nao do topo. */
       .tile.bonus::before {
-        background: radial-gradient(120% 90% at 100% 0%, rgba(245,158,11,0.26), transparent 62%);
+        background: radial-gradient(60% 200% at 100% 50%, rgba(245,158,11,0.26), transparent 65%);
       }
       .tile.bonus:hover {
         border-color: rgba(245,158,11,0.65);
@@ -297,11 +323,13 @@
 
   <body class="grid-bg">
     <header class="topo">
-      <img src="logo.png" alt="Lista de Fornecedores" />
-      <div class="acoes">
-        <span class="quem" id="quem"></span>
-        <a class="btn-ghost" id="linkAdmin" href="admin.html" hidden><i class="fa-solid fa-sliders"></i> Editar</a>
-        <button class="btn-ghost" id="sair" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
+      <div class="topo-interno">
+        <img src="logo.png" alt="Lista de Fornecedores" />
+        <div class="acoes">
+          <span class="quem" id="quem"></span>
+          <a class="btn-ghost" id="linkAdmin" href="admin.html" hidden><i class="fa-solid fa-sliders"></i> Editar</a>
+          <button class="btn-ghost" id="sair" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
+        </div>
       </div>
     </header>
 
@@ -552,7 +580,13 @@
           const total = porCategoria.get(nome);
           qtd.textContent = total === 1 ? "1 contato" : `${total} contatos`;
 
-          tile.append(icone, seta, rotulo, qtd);
+          // Nome e quantidade num bloco so: o tile de bonus deita o layout
+          // em linha, e sem o bloco os dois ficariam lado a lado.
+          const texto = document.createElement("span");
+          texto.className = "texto";
+          texto.append(rotulo, qtd);
+
+          tile.append(icone, seta, texto);
           tile.addEventListener("click", () => {
             categoriaAtiva = nome;
             campoBusca.value = "";

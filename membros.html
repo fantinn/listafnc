@@ -196,18 +196,48 @@
         color: rgba(232,240,255,0.55); text-transform: uppercase;
       }
 
-      .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+      .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
 
       .card {
         display: flex; flex-direction: column; gap: 10px;
-        padding: 18px; border-radius: 14px;
+        padding: 14px; border-radius: 14px;
         background: var(--darker);
         border: 1px solid rgba(255,255,255,0.09);
         transition: border-color 0.2s, transform 0.2s;
       }
       .card:hover { border-color: rgba(0,102,255,0.45); transform: translateY(-2px); }
 
+      /* Linha de contato: inicial, dados e acao lado a lado. Empilhado,
+         cada card tinha um nome no topo, um vazio no meio e uma barra
+         verde larga embaixo - com 8 cards virava uma parede de barras. */
       .card .topo-card { display: flex; align-items: center; gap: 11px; }
+      /* min-width:0 deixa o nome longo truncar em vez de esticar a linha. */
+      .card .dados { flex: 1; min-width: 0; }
+      .card .meta {
+        margin-top: 3px; font-size: 0.78rem;
+        color: rgba(232,240,255,0.5);
+        /* normal anula o "anywhere" global: o telefone e um bloco unico,
+           quebrar no meio do numero e pior do que passar do card. */
+        overflow-wrap: normal;
+      }
+      .card .insta-link {
+        display: inline-flex; align-items: center; gap: 6px;
+        margin-top: 5px; font-size: 0.76rem;
+        color: rgba(232,240,255,0.6); text-decoration: none;
+        transition: color 0.15s;
+      }
+      .card .insta-link:hover { color: var(--sky); }
+      .card .insta-link:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+      .card .acoes-card { display: flex; gap: 7px; margin-left: auto; flex-shrink: 0; }
+      .card .acoes-card a {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 40px; height: 40px; border-radius: 11px;
+        font-size: 1rem; text-decoration: none;
+        border: 1px solid transparent;
+        transition: filter 0.15s, transform 0.15s;
+      }
+      .card .acoes-card a:hover { filter: brightness(1.25); transform: translateY(-1px); }
+      .card .acoes-card a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
       /* A inicial preenche o vazio do card: a maioria dos contatos só tem
          nome e telefone, e o card ficava com um canto oco. */
       .card .inicial {
@@ -219,7 +249,13 @@
         font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 0.95rem;
         color: var(--sky); text-transform: uppercase;
       }
-      .card h2 { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+      .card h2 {
+        font-size: 0.92rem; font-weight: 700; line-height: 1.3;
+        /* break-word anula o "anywhere" global, e hyphens poe o hifen quando
+           a palavra realmente nao cabe: sem isso "PERSONALIZACAO" era
+           cortada no meio sem nenhuma marca. */
+        overflow-wrap: break-word; hyphens: auto;
+      }
       .card .categoria {
         align-self: flex-start; padding: 4px 10px; border-radius: 6px;
         background: rgba(0,102,255,0.16); color: var(--sky);
@@ -230,22 +266,7 @@
       .grade.sem-rotulo .card .categoria { display: none; }
       .card .local { font-size: 0.78rem; color: rgba(232,240,255,0.5); }
       .card .obs { font-size: 0.8rem; line-height: 1.5; color: rgba(232,240,255,0.65); }
-      /* margin-top:auto alinha os botões na base: sem isso, card com
-         observação empurrava o botão para baixo e o vizinho sem observação
-         deixava o dele no meio do nada. */
-      .card .contatos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 4px; }
-      .card .contatos a {
-        flex: 1 1 132px;
-        display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-        padding: 11px 14px; border-radius: 10px;
-        font-size: 0.78rem; font-weight: 600; text-decoration: none;
-        border: 1px solid transparent;
-        transition: filter 0.15s, border-color 0.15s;
-      }
-      .card .contatos a:hover { filter: brightness(1.2); }
-      .card .contatos a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
       .zap { background: rgba(37,211,102,0.14); border-color: rgba(37,211,102,0.3); color: #4ade80; }
-      .insta { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: rgba(232,240,255,0.8); }
 
       .estado {
         display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -706,10 +727,60 @@
         inicial.textContent = ((f.nome ?? "").match(/[\p{L}\p{N}]/u) ?? ["?"])[0];
         inicial.setAttribute("aria-hidden", "true");
 
+        const dados = document.createElement("div");
+        dados.className = "dados";
+
         const titulo = document.createElement("h2");
         titulo.textContent = f.nome;
+        dados.appendChild(titulo);
 
-        topo.append(inicial, titulo);
+        // Telefone visivel como texto: o botao e a acao, mas o numero ainda
+        // precisa dar para ler e copiar sem sair da pagina.
+        const perfil = f.instagram ? f.instagram.replace(/^@/, "").trim() : "";
+        if (f.telefone) {
+          const meta = document.createElement("p");
+          meta.className = "meta";
+          meta.textContent = f.telefone;
+          dados.appendChild(meta);
+        }
+
+        // Instagram vai como link de texto, nao como segundo botao redondo:
+        // dois botoes espremiam a coluna a ponto de quebrar o telefone no
+        // meio do numero.
+        if (perfil) {
+          const link = document.createElement("a");
+          link.className = "insta-link";
+          link.href = "https://instagram.com/" + encodeURIComponent(perfil);
+          link.target = "_blank";
+          link.rel = "noopener";
+          const icone = document.createElement("i");
+          icone.className = "fa-brands fa-instagram";
+          icone.setAttribute("aria-hidden", "true");
+          link.append(icone, "@" + perfil);
+          dados.appendChild(link);
+        }
+
+        const acoes = document.createElement("div");
+        acoes.className = "acoes-card";
+
+        const zap = linkWhatsapp(f.telefone);
+        if (zap) {
+          const a = document.createElement("a");
+          a.className = "zap";
+          a.href = zap;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.setAttribute("aria-label", "Chamar " + f.nome + " no WhatsApp");
+          a.title = "Chamar no WhatsApp";
+          const icone = document.createElement("i");
+          icone.className = "fa-brands fa-whatsapp";
+          icone.setAttribute("aria-hidden", "true");
+          a.appendChild(icone);
+          acoes.appendChild(a);
+        }
+
+        topo.append(inicial, dados);
+        if (acoes.children.length > 0) topo.appendChild(acoes);
         card.appendChild(topo);
 
         const lugar = [f.cidade, f.estado].filter(Boolean).join(" - ");
@@ -727,36 +798,6 @@
           card.appendChild(obs);
         }
 
-        const contatos = document.createElement("div");
-        contatos.className = "contatos";
-
-        const zap = linkWhatsapp(f.telefone);
-        if (zap) {
-          const a = document.createElement("a");
-          a.className = "zap";
-          a.href = zap;
-          a.target = "_blank";
-          a.rel = "noopener";
-          const icone = document.createElement("i");
-          icone.className = "fa-brands fa-whatsapp";
-          a.append(icone, f.telefone);
-          contatos.appendChild(a);
-        }
-
-        if (f.instagram) {
-          const perfil = f.instagram.replace(/^@/, "").trim();
-          const a = document.createElement("a");
-          a.className = "insta";
-          a.href = "https://instagram.com/" + encodeURIComponent(perfil);
-          a.target = "_blank";
-          a.rel = "noopener";
-          const icone = document.createElement("i");
-          icone.className = "fa-brands fa-instagram";
-          a.append(icone, "@" + perfil);
-          contatos.appendChild(a);
-        }
-
-        if (contatos.children.length > 0) card.appendChild(contatos);
         return card;
       }
 

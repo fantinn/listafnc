@@ -48,19 +48,27 @@
         display: block; font-size: 0.7rem; letter-spacing: 0.14em;
         text-transform: uppercase; color: rgba(232,240,255,0.6); margin-bottom: 8px;
       }
-      .field { margin-bottom: 18px; }
+      .field { position: relative; margin-bottom: 18px; }
+      /* Ícone dentro do campo, igual à busca da área de membros. */
+      .field > i {
+        position: absolute; left: 16px; bottom: 17px;
+        font-size: 0.85rem; color: rgba(232,240,255,0.3);
+        transition: color 0.2s; pointer-events: none;
+      }
+      .field:focus-within > i { color: var(--sky); }
       input {
-        width: 100%; padding: 15px 16px;
+        width: 100%; padding: 15px 16px 15px 42px;
         background: rgba(255,255,255,0.05);
         border: 1px solid rgba(255,255,255,0.12);
         border-radius: 12px;
         color: var(--light); font-family: "Inter", sans-serif; font-size: 0.95rem;
-        transition: border-color 0.2s, background 0.2s;
+        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
       }
       input:focus {
         outline: none;
         border-color: var(--blue);
         background: rgba(0,102,255,0.08);
+        box-shadow: 0 0 0 3px rgba(0,102,255,0.15);
       }
       input::placeholder { color: rgba(232,240,255,0.28); }
 
@@ -112,11 +120,13 @@
       <form id="form" novalidate>
         <div class="field">
           <label for="email">E-mail da compra</label>
+          <i class="fa-solid fa-envelope"></i>
           <input type="email" id="email" name="email" autocomplete="email" placeholder="seuemail@exemplo.com" required />
         </div>
 
         <div class="field">
           <label for="senha">Senha</label>
+          <i class="fa-solid fa-key"></i>
           <input type="password" id="senha" name="senha" autocomplete="current-password" placeholder="••••••••" required />
         </div>
 

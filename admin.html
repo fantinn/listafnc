@@ -72,6 +72,29 @@
       .busca i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: rgba(232,240,255,0.35); font-size: 0.85rem; }
       .busca input { padding-left: 40px; }
 
+      /* Categorias: linha arrastavel, nome editavel no lugar. */
+      .linha-categoria {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 12px; border-radius: 10px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        margin-bottom: 8px;
+        cursor: grab;
+      }
+      .linha-categoria.arrastando { opacity: 0.4; }
+      /* Linha azul indicando onde o item solto vai entrar. */
+      .linha-categoria.sobre { border-color: var(--blue); background: rgba(0,102,255,0.08); }
+      .linha-categoria .alca { color: rgba(232,240,255,0.3); font-size: 0.85rem; flex-shrink: 0; }
+      .linha-categoria input {
+        flex: 1; padding: 8px 10px; font-size: 0.85rem;
+        background: transparent; border: 1px solid transparent; border-radius: 8px;
+      }
+      .linha-categoria input:hover { border-color: rgba(255,255,255,0.12); }
+      .linha-categoria input:focus { outline: none; background: rgba(0,102,255,0.08); border-color: var(--blue); }
+      .linha-categoria .contagem-cat {
+        font-size: 0.7rem; color: rgba(232,240,255,0.4); flex-shrink: 0; white-space: nowrap;
+      }
+
       .linha {
         display: flex; align-items: flex-start; gap: 14px;
         padding: 14px 16px; border-radius: 11px;
@@ -177,6 +200,12 @@
         </form>
 
         <div class="painel">
+          <h2>Categorias</h2>
+          <p class="sub" style="margin-bottom:14px;">Arraste para mudar a ordem em que aparecem para o comprador. Clique no nome para renomear — o fornecedor continua na mesma categoria.</p>
+          <div id="listaCategorias"></div>
+        </div>
+
+        <div class="painel">
           <h2 id="tituloLista">Fornecedores</h2>
           <div class="busca">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -208,6 +237,7 @@
 
       let editandoId = null;
       let fornecedores = [];
+      let categoriasLista = [];
 
       function avisar(texto, ok = true) {
         recado.className = "recado visivel " + (ok ? "ok" : "ruim");
@@ -280,6 +310,151 @@
 
       function normalizar(t) {
         return (t ?? "").toString().normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+      }
+
+      // --- Categorias: nome e ordem exibidos aos compradores. ---
+
+      async function carregarCategorias() {
+        const { data, error } = await supabase
+          .from("categorias")
+          .select("*")
+          .order("ordem", { ascending: true });
+        if (error) {
+          avisar("Não consegui carregar as categorias: " + error.message, false);
+          return;
+        }
+        categoriasLista = data ?? [];
+        renderCategorias();
+      }
+
+      // Cria a categoria na primeira vez que alguem digita um nome novo no
+      // formulario de fornecedor. Sem isso, ela so existiria no texto solto
+      // de fornecedores.categoria e nunca apareceria aqui para reordenar.
+      async function garantirCategoria(nomeCategoria) {
+        const chave = normalizar(nomeCategoria);
+        if (categoriasLista.some((c) => c.chave === chave)) return;
+        const proximaOrdem = categoriasLista.reduce((max, c) => Math.max(max, c.ordem), 0) + 1;
+        const { data, error } = await supabase
+          .from("categorias")
+          .insert({ chave, nome: nomeCategoria, ordem: proximaOrdem })
+          .select()
+          .single();
+        if (error) {
+          // Nao interrompe o fluxo: o fornecedor ja foi salvo. So fica sem
+          // ordem/renome proprios ate alguem tentar de novo.
+          console.error("falha ao criar categoria:", error.message);
+          return;
+        }
+        categoriasLista.push(data);
+      }
+
+      function renderCategorias() {
+        const listaCategorias = document.getElementById("listaCategorias");
+        listaCategorias.replaceChildren();
+
+        if (categoriasLista.length === 0) {
+          const vazio = document.createElement("p");
+          vazio.style.cssText = "font-size:0.85rem;color:rgba(232,240,255,0.45);padding:8px 0;";
+          vazio.textContent = "Nenhuma categoria ainda. Ela aparece aqui assim que você salvar o primeiro fornecedor com essa categoria.";
+          listaCategorias.appendChild(vazio);
+          return;
+        }
+
+        for (const cat of categoriasLista) listaCategorias.appendChild(montarLinhaCategoria(cat));
+      }
+
+      let arrastandoId = null;
+
+      function montarLinhaCategoria(cat) {
+        const linha = document.createElement("div");
+        linha.className = "linha-categoria";
+        linha.draggable = true;
+        linha.dataset.id = cat.id;
+
+        const alca = document.createElement("i");
+        alca.className = "fa-solid fa-grip-vertical alca";
+        alca.setAttribute("aria-hidden", "true");
+        alca.title = "Arraste para reordenar";
+
+        const nomeInput = document.createElement("input");
+        nomeInput.type = "text";
+        nomeInput.value = cat.nome;
+        nomeInput.setAttribute("aria-label", "Nome da categoria \"" + cat.nome + "\"");
+        nomeInput.addEventListener("change", () => renomearCategoria(cat, nomeInput));
+
+        const contagem = document.createElement("span");
+        contagem.className = "contagem-cat";
+        const total = fornecedores.filter((f) => normalizar(f.categoria) === cat.chave).length;
+        contagem.textContent = total === 1 ? "1 fornecedor" : `${total} fornecedores`;
+
+        linha.append(alca, nomeInput, contagem);
+
+        linha.addEventListener("dragstart", (evento) => {
+          arrastandoId = cat.id;
+          linha.classList.add("arrastando");
+          evento.dataTransfer.effectAllowed = "move";
+        });
+        linha.addEventListener("dragend", () => {
+          linha.classList.remove("arrastando");
+          for (const el of listaCategoriasEl().querySelectorAll(".sobre")) el.classList.remove("sobre");
+        });
+        linha.addEventListener("dragover", (evento) => {
+          evento.preventDefault();
+          if (arrastandoId === cat.id) return;
+          linha.classList.add("sobre");
+        });
+        linha.addEventListener("dragleave", () => linha.classList.remove("sobre"));
+        linha.addEventListener("drop", (evento) => {
+          evento.preventDefault();
+          linha.classList.remove("sobre");
+          if (!arrastandoId || arrastandoId === cat.id) return;
+          reordenarCategorias(arrastandoId, cat.id);
+        });
+
+        return linha;
+      }
+
+      function listaCategoriasEl() {
+        return document.getElementById("listaCategorias");
+      }
+
+      function reordenarCategorias(idArrastado, idAlvo) {
+        const doIndex = categoriasLista.findIndex((c) => c.id === idArrastado);
+        const paraIndex = categoriasLista.findIndex((c) => c.id === idAlvo);
+        if (doIndex === -1 || paraIndex === -1) return;
+        const [movido] = categoriasLista.splice(doIndex, 1);
+        categoriasLista.splice(paraIndex, 0, movido);
+        renderCategorias();
+        salvarOrdemCategorias();
+      }
+
+      async function salvarOrdemCategorias() {
+        const resultados = await Promise.all(
+          categoriasLista.map((cat, i) => supabase.from("categorias").update({ ordem: i + 1 }).eq("id", cat.id))
+        );
+        const falhou = resultados.find((r) => r.error);
+        if (falhou) {
+          avisar("Não consegui salvar a nova ordem: " + falhou.error.message, false);
+          return;
+        }
+        categoriasLista.forEach((cat, i) => (cat.ordem = i + 1));
+      }
+
+      async function renomearCategoria(cat, input) {
+        const novoNome = input.value.trim();
+        if (!novoNome) {
+          input.value = cat.nome;
+          return;
+        }
+        if (novoNome === cat.nome) return;
+        const { error } = await supabase.from("categorias").update({ nome: novoNome }).eq("id", cat.id);
+        if (error) {
+          avisar("Não consegui renomear: " + error.message, false);
+          input.value = cat.nome;
+          return;
+        }
+        cat.nome = novoNome;
+        avisar("Categoria renomeada.");
       }
 
       function render() {
@@ -420,7 +595,9 @@
 
         avisar(editandoId ? "Alterações salvas." : "Fornecedor adicionado.");
         limparFormulario();
+        if (dados.categoria) await garantirCategoria(dados.categoria);
         await carregar();
+        renderCategorias();
       });
 
       async function alternarAtivo(f) {
@@ -434,6 +611,7 @@
         }
         avisar(f.ativo ? "Oculto dos compradores." : "Visível para os compradores.");
         await carregar();
+        renderCategorias();
       }
 
       async function apagar(f) {
@@ -445,10 +623,12 @@
         }
         avisar("Fornecedor removido.");
         await carregar();
+        renderCategorias();
       }
 
       campoBusca.addEventListener("input", render);
       await carregar();
+      await carregarCategorias();
     </script>
   </body>
 </html>

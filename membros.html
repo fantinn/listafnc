@@ -508,20 +508,26 @@
         throw ultimoErro;
       }
 
-      // 3. Busca os fornecedores. A RLS ja limita aos ativos e a quem e membro.
+      // 3. Busca fornecedores e categorias. A RLS ja limita fornecedores aos
+      //    ativos e a quem e membro; categorias e so leitura de nome/ordem.
       let fornecedores = [];
+      let categoriasInfo = [];
       try {
-        fornecedores = await insistir(async () => {
-          const { data, error } = await supabase
-            .from("fornecedores")
-            .select("nome, categoria, telefone, instagram, cidade, estado, observacoes")
-            // Explicito de proposito: a RLS ja esconde os inativos do comprador,
-            // mas o admin enxerga tudo - e aqui a tela e a do comprador.
-            .eq("ativo", true)
-            .order("categoria", { ascending: true, nullsFirst: false })
-            .order("nome", { ascending: true });
-          if (error) throw error;
-          return data ?? [];
+        [fornecedores, categoriasInfo] = await insistir(async () => {
+          const [respFornecedores, respCategorias] = await Promise.all([
+            supabase
+              .from("fornecedores")
+              .select("nome, categoria, telefone, instagram, cidade, estado, observacoes")
+              // Explicito de proposito: a RLS ja esconde os inativos do comprador,
+              // mas o admin enxerga tudo - e aqui a tela e a do comprador.
+              .eq("ativo", true)
+              .order("categoria", { ascending: true, nullsFirst: false })
+              .order("nome", { ascending: true }),
+            supabase.from("categorias").select("chave, nome, ordem").order("ordem", { ascending: true }),
+          ]);
+          if (respFornecedores.error) throw respFornecedores.error;
+          if (respCategorias.error) throw respCategorias.error;
+          return [respFornecedores.data ?? [], respCategorias.data ?? []];
         });
       } catch (e) {
         falhar(
@@ -641,6 +647,17 @@
         return normalizar(categoria).includes("bonus");
       }
 
+      // Chave -> {nome, ordem} vinda do painel do admin. O rotulo mostrado
+      // pode ter sido renomeado ali; a chave (normalizar do nome original)
+      // e o que liga essa linha ao texto bruto salvo em fornecedores.categoria
+      // e ao desenho do icone, que nao muda com o renome.
+      const infoPorChave = new Map(categoriasInfo.map((c) => [c.chave, c]));
+      // Nome exibido: o do admin quando existe; senao o texto bruto mesmo -
+      // caso de categoria digitada direto no fornecedor antes de sincronizar.
+      function nomeExibido(categoriaBruta) {
+        return infoPorChave.get(normalizar(categoriaBruta))?.nome ?? categoriaBruta;
+      }
+
       function montarCategorias() {
         const porCategoria = new Map();
         for (const f of fornecedores) {
@@ -649,26 +666,28 @@
         }
         if (porCategoria.size === 0) return;
 
-        // Da categoria mais cheia para a mais vazia, com os bônus sempre
-        // por último. Empate desempata por nome, para a ordem não mudar
-        // a cada carregamento.
+        // Ordem definida no admin. Categoria sem linha em `categorias` (caso
+        // raro, ainda nao sincronizada) cai no fim, por nome.
         const ordenadas = [...porCategoria.keys()].sort((a, b) => {
-          if (ehBonus(a) !== ehBonus(b)) return ehBonus(a) ? 1 : -1;
-          const porQuantidade = porCategoria.get(b) - porCategoria.get(a);
-          return porQuantidade !== 0 ? porQuantidade : a.localeCompare(b, "pt-BR");
+          const infoA = infoPorChave.get(normalizar(a));
+          const infoB = infoPorChave.get(normalizar(b));
+          if (infoA && infoB) return infoA.ordem - infoB.ordem;
+          if (infoA !== infoB) return infoA ? -1 : 1;
+          return a.localeCompare(b, "pt-BR");
         });
 
-        for (const nome of ordenadas) {
+        for (const categoriaBruta of ordenadas) {
           const tile = document.createElement("button");
           tile.type = "button";
-          tile.className = "tile" + (ehBonus(nome) ? " bonus" : "");
+          tile.className = "tile" + (ehBonus(categoriaBruta) ? " bonus" : "");
 
           const icone = document.createElement("span");
           icone.className = "icone";
-          icone.appendChild(montarIcone(nome));
+          icone.appendChild(montarIcone(categoriaBruta));
 
           const rotulo = document.createElement("span");
           rotulo.className = "nome";
+          const nome = nomeExibido(categoriaBruta);
           // Espaço de largura zero depois da barra: dá ao navegador um ponto
           // de quebra legal, senão "Camisas/Bermudas" partia no meio.
           rotulo.textContent = nome.split("/").join("/\u200B");
@@ -678,7 +697,7 @@
 
           const qtd = document.createElement("span");
           qtd.className = "qtd";
-          const total = porCategoria.get(nome);
+          const total = porCategoria.get(categoriaBruta);
           qtd.textContent = total === 1 ? "1 contato" : `${total} contatos`;
 
           // Nome e quantidade num bloco so: o tile de bonus deita o layout
@@ -689,7 +708,7 @@
 
           tile.append(icone, seta, texto);
           tile.addEventListener("click", () => {
-            categoriaAtiva = nome;
+            categoriaAtiva = categoriaBruta;
             campoBusca.value = "";
             render();
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -713,7 +732,7 @@
         if (f.categoria) {
           const cat = document.createElement("span");
           cat.className = "categoria";
-          cat.textContent = f.categoria;
+          cat.textContent = nomeExibido(f.categoria);
           card.appendChild(cat);
         }
 
@@ -826,7 +845,7 @@
           return termo.split(/\s+/).every((parte) => alvo.includes(parte));
         });
 
-        tituloVista.textContent = buscando ? "Resultados da busca" : categoriaAtiva;
+        tituloVista.textContent = buscando ? "Resultados da busca" : nomeExibido(categoriaAtiva);
         grade.classList.toggle("sem-rotulo", !buscando);
 
         contagem.hidden = false;

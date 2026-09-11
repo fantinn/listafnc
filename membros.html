@@ -278,6 +278,41 @@
 
       .aviso { margin-top: 40px; text-align: center; font-size: 0.72rem; line-height: 1.6; color: rgba(232,240,255,0.3); }
 
+      /* Avisos do fim da lista (o mesmo texto que ia no PDF): so aparecem
+         depois da grade de categorias, apos o card de bonus. */
+      .info-extra { margin-top: 40px; display: flex; flex-direction: column; gap: 20px; }
+      .info-bloco {
+        padding: 24px; border-radius: 16px;
+        background: var(--darker); border: 1px solid rgba(255,255,255,0.09);
+      }
+      .info-bloco p {
+        font-size: 0.9rem; line-height: 1.7; text-align: center;
+        color: rgba(232,240,255,0.85);
+      }
+      .info-bloco p + p { margin-top: 16px; }
+      .info-bloco strong { color: var(--sky); }
+      .info-bloco.atencao h3 {
+        text-align: center; margin-bottom: 14px;
+        font-family: "Space Grotesk", sans-serif; font-size: 1.1rem;
+        color: var(--sky); letter-spacing: 0.02em;
+      }
+      .info-bloco.precaucoes h3 {
+        text-align: center; margin-bottom: 18px;
+        font-family: "Space Grotesk", sans-serif; font-size: 1.1rem;
+        color: var(--sky); letter-spacing: 0.02em;
+      }
+      .precaucoes-grade {
+        display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 26px;
+      }
+      .precaucoes-grade p {
+        text-align: left; font-size: 0.8rem; line-height: 1.6;
+        color: rgba(232,240,255,0.68); margin: 0;
+      }
+      @media (max-width: 640px) {
+        .precaucoes-grade { grid-template-columns: 1fr; }
+        .info-bloco { padding: 20px; }
+      }
+
       .destaque {
         display: flex; align-items: flex-start; gap: 12px;
         padding: 14px 16px; border-radius: 12px; margin-bottom: 18px;
@@ -400,6 +435,46 @@
         <!-- Vista 1: escolha da categoria -->
         <div id="vistaCategorias">
           <div class="categorias" id="categorias"></div>
+
+          <!-- Avisos de fim de lista: mesmo texto que ia no PDF, agora fixo
+               na pagina, sempre depois do card de bonus. -->
+          <div class="info-extra">
+            <div class="info-bloco">
+              <p>
+                Parabéns, você acaba de garantir nossa lista com os mesmos fornecedores
+                que nos abastecem diariamente com os <strong>melhores produtos</strong>
+                e a melhor qualidade!
+              </p>
+              <p>
+                E ganhou de <strong>brinde</strong> alguns contatos que se encontram
+                no final da lista, em “Contatos Bônus”.
+              </p>
+            </div>
+
+            <div class="info-bloco atencao">
+              <h3>Atenção!!</h3>
+              <p>
+                Todos os fornecedores dessa lista fornecem para nós. Os modelos, com
+                o tempo, vão trocando — nós garantimos a <strong>qualidade</strong>,
+                porém os modelos nem sempre vão ser os mesmos. Viu e gostou? Faça o
+                pedido, pois quando acaba não tem como garantir se vai ter reposição.
+              </p>
+            </div>
+
+            <div class="info-bloco precaucoes">
+              <h3>Precauções</h3>
+              <div class="precaucoes-grade">
+                <p>1 – O fornecedor vende em atacado, focado em quem quer revender. Não insista em fazer pedidos com 1 só tamanho, nem em pegar quantidades menores que o mínimo que eles pedem.</p>
+                <p>2 – O fornecedor prioriza vender para quem faz pedido no resumo e na grade, levando quantidade em todos os tamanhos.</p>
+                <p>3 – Evite pedir ao fornecedor que envie mais fotos ou vídeos de um produto que ele já te enviou foto. A demanda deles é alta, e eles priorizam atender quem já chega no resumo.</p>
+                <p>4 – Chame um fornecedor só quando já estiver com a intenção de realizar o pedido. Ficar mandando muitas mensagens e nunca fechar pedido pode fazer com que, de uma hora para outra, ele pare de te responder. (Não nos responsabilizamos caso isso aconteça.)</p>
+                <p>5 – Nunca faça um pedido e depois cancele, pois isso atrasa muito o trabalho dos fornecedores — nesses casos, ele pode nunca mais te atender. (Não nos responsabilizamos caso isso aconteça.)</p>
+                <p>6 – Nunca fique pedindo descontos absurdos ou comparando preço de um fornecedor com o outro. Os fornecedores ganham na quantidade, não na unidade — o desconto existe para clientes que compram grandes quantidades e com frequência. Desconto é cortesia, não obrigação do fornecedor.</p>
+                <p>7 – Trocas por defeito ou reclamações só são aceitas quando o cliente grava a conferência desde o pacote lacrado até o fim. Se não tem vídeo, não tem como reclamar.</p>
+                <p>8 – A demanda dos fornecedores é alta. Mandou mensagem, aguarde — ficar ligando ou mandando várias mensagens só vai atrasar seu atendimento.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Vista 2: contatos da categoria escolhida (ou da busca) -->

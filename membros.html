@@ -741,9 +741,12 @@
         }
         if (porCategoria.size === 0) return;
 
-        // Ordem definida no admin. Categoria sem linha em `categorias` (caso
-        // raro, ainda nao sincronizada) cai no fim, por nome.
+        // Ordem definida no admin, com o bonus sempre por ultimo - isso nao
+        // depende dos dados estarem em dia: mesmo que uma categoria fique
+        // sem linha em `categorias` (raro, ainda nao sincronizada) ou com a
+        // chave desatualizada, o bonus nunca fica no meio da grade.
         const ordenadas = [...porCategoria.keys()].sort((a, b) => {
+          if (ehBonus(a) !== ehBonus(b)) return ehBonus(a) ? 1 : -1;
           const infoA = infoPorChave.get(normalizar(a));
           const infoB = infoPorChave.get(normalizar(b));
           if (infoA && infoB) return infoA.ordem - infoB.ordem;

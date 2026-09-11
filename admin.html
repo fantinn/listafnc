@@ -72,27 +72,54 @@
       .busca i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: rgba(232,240,255,0.35); font-size: 0.85rem; }
       .busca input { padding-left: 40px; }
 
-      /* Categorias: linha arrastavel, nome editavel no lugar. */
+      /* Categorias: cartao deitado, parecido com o retangulo que o
+         comprador ve, so que com o nome editavel no lugar do link. */
       .linha-categoria {
-        display: flex; align-items: center; gap: 12px;
-        padding: 10px 12px; border-radius: 10px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.07);
-        margin-bottom: 8px;
+        display: flex; align-items: center; gap: 14px;
+        padding: 12px 14px; border-radius: 14px;
+        background: var(--darker);
+        border: 1px solid rgba(255,255,255,0.09);
+        margin-bottom: 10px;
         cursor: grab;
       }
       .linha-categoria.arrastando { opacity: 0.4; }
-      /* Linha azul indicando onde o item solto vai entrar. */
+      /* Realce indicando onde o item solto vai entrar. */
       .linha-categoria.sobre { border-color: var(--blue); background: rgba(0,102,255,0.08); }
       .linha-categoria .alca { color: rgba(232,240,255,0.3); font-size: 0.85rem; flex-shrink: 0; }
-      .linha-categoria input {
-        flex: 1; padding: 8px 10px; font-size: 0.85rem;
-        background: transparent; border: 1px solid transparent; border-radius: 8px;
+      .linha-categoria .icone-cat {
+        flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+        width: 42px; height: 42px; border-radius: 11px;
+        background: rgba(0,102,255,0.14); border: 1px solid rgba(0,102,255,0.24);
+        color: var(--sky);
       }
-      .linha-categoria input:hover { border-color: rgba(255,255,255,0.12); }
-      .linha-categoria input:focus { outline: none; background: rgba(0,102,255,0.08); border-color: var(--blue); }
+      .linha-categoria .icone-cat svg { width: 21px; height: 21px; }
+      .linha-categoria .dados-cat { flex: 1; min-width: 0; }
+      .linha-categoria .dados-cat input {
+        width: 100%; padding: 7px 9px;
+        font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 0.92rem;
+        background: transparent; border: 1px solid transparent; border-radius: 8px; color: var(--light);
+      }
+      .linha-categoria .dados-cat input:hover { border-color: rgba(255,255,255,0.12); }
+      .linha-categoria .dados-cat input:focus { outline: none; background: rgba(0,102,255,0.08); border-color: var(--blue); }
       .linha-categoria .contagem-cat {
-        font-size: 0.7rem; color: rgba(232,240,255,0.4); flex-shrink: 0; white-space: nowrap;
+        display: block; margin-top: 2px; padding-left: 9px;
+        font-size: 0.68rem; letter-spacing: 0.09em; text-transform: uppercase;
+        color: rgba(232,240,255,0.45); flex-shrink: 0; white-space: nowrap;
+      }
+
+      /* Bonus: mesma cor ambar do card do comprador, sem alca - e fixo, nao
+         se arrasta. */
+      .linha-categoria.bonus {
+        cursor: default;
+        border-color: rgba(245,158,11,0.32);
+      }
+      .linha-categoria.bonus .icone-cat {
+        color: #fbbf24; background: rgba(245,158,11,0.13); border-color: rgba(245,158,11,0.26);
+      }
+      .linha-categoria .fixo {
+        flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+        font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase;
+        color: rgba(232,240,255,0.35);
       }
 
       .linha {
@@ -201,7 +228,7 @@
 
         <div class="painel">
           <h2>Categorias</h2>
-          <p class="sub" style="margin-bottom:14px;">Arraste para mudar a ordem em que aparecem para o comprador. Clique no nome para renomear — o fornecedor continua na mesma categoria.</p>
+          <p class="sub" style="margin-bottom:14px;">Arraste para mudar a ordem em que aparecem para o comprador. Clique no nome para renomear — o fornecedor continua na mesma categoria. Contatos Bônus fica sempre por último.</p>
           <div id="listaCategorias"></div>
         </div>
 
@@ -312,6 +339,82 @@
         return (t ?? "").toString().normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
       }
 
+      function ehBonus(nome) {
+        return normalizar(nome).includes("bonus");
+      }
+
+      // Mesmos desenhos usados em membros.html, para o card daqui parecer
+      // com o que o comprador ve. Sao constantes nossas, nunca vem do banco.
+      const DESENHOS = {
+        "pecas de grife": [["path", "M3.5 18.5 L5 7 L9.5 11.5 L12 5 L14.5 11.5 L19 7 L20.5 18.5 Z"], ["path", "M3.5 18.5 H20.5"]],
+        "camisas/bermudas street": [
+          ["path", "M8.5 3 L4.5 5 L2.5 9 L5.5 10.8 V21 H18.5 V10.8 L21.5 9 L19.5 5 L15.5 3"],
+          ["path", "M8.5 3 C9.6 5.9 14.4 5.9 15.5 3"],
+        ],
+        "pecas de frio": [
+          ["path", "M12 2.5 V21.5 M3.8 7.2 L20.2 16.8 M20.2 7.2 L3.8 16.8"],
+          ["path", "M9.2 4.6 L12 6.8 L14.8 4.6 M9.2 19.4 L12 17.2 L14.8 19.4"],
+        ],
+        "camisas de time": [
+          ["circle", 12, 12, 9],
+          ["path", "M12 7 L16 9.9 L14.5 14.6 H9.5 L8 9.9 Z"],
+          ["path", "M12 7 V3 M16 9.9 L19.8 8.7 M14.5 14.6 L17 18 M9.5 14.6 L7 18 M8 9.9 L4.2 8.7"],
+        ],
+        "calcados": [
+          ["path", "M2.6 16.9 H21.4 C21.4 18.4 20.2 19.5 18.7 19.5 H5.3 C3.8 19.5 2.6 18.4 2.6 16.9 Z"],
+          ["path", "M4.3 16.9 V11.3 C4.3 10.5 4.9 9.9 5.7 9.9 H8.3 C8.8 9.9 9.3 10.2 9.5 10.6 L10.7 12.9 C11 13.4 11.5 13.8 12.1 13.9 L17.7 15.2 C18.9 15.5 19.8 16 20.3 16.9"],
+          ["path", "M6.6 12.7 H9.2"],
+        ],
+        "acessorios": [
+          ["circle", 6.3, 14, 3.6],
+          ["circle", 17.7, 14, 3.6],
+          ["path", "M9.9 13.4 C11 12.6 13 12.6 14.1 13.4"],
+          ["path", "M2.9 12.4 L4.6 8 M21.1 12.4 L19.4 8"],
+        ],
+        "originais": [
+          ["path", "M12 2.5 L20 5.6 V11.8 C20 16.5 16.6 20 12 21.5 C7.4 20 4 16.5 4 11.8 V5.6 Z"],
+          ["path", "M8.8 11.9 L11.1 14.2 L15.3 10"],
+        ],
+        "jeans": [
+          ["path", "M7 2.8 H17 L18 21.2 H13.8 L12 11.4 L10.2 21.2 H6 Z"],
+          ["path", "M7.1 6.4 H16.9"],
+        ],
+        "contatos bonus": [
+          ["path", "M12 2.8 L14.8 8.7 L21.2 9.6 L16.6 14.2 L17.7 20.6 L12 17.6 L6.3 20.6 L7.4 14.2 L2.8 9.6 L9.2 8.7 Z"],
+        ],
+      };
+      const DESENHO_PADRAO = [
+        ["path", "M20.6 12.8 L12.8 20.6 C12 21.4 10.8 21.4 10 20.6 L3.6 14.2 C3.2 13.8 3 13.3 3 12.8 V5.4 C3 4.3 3.9 3.4 5 3.4 H12.4 C12.9 3.4 13.4 3.6 13.8 4 L20.6 10.8 C21.4 11.6 21.4 12.8 20.6 12.8 Z"],
+        ["circle", 7.6, 7.6, 1.3],
+      ];
+      const SVG_NS = "http://www.w3.org/2000/svg";
+
+      function montarIcone(categoria) {
+        const formas = DESENHOS[normalizar(categoria)] ?? DESENHO_PADRAO;
+        const svg = document.createElementNS(SVG_NS, "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-width", "1.7");
+        svg.setAttribute("stroke-linecap", "round");
+        svg.setAttribute("stroke-linejoin", "round");
+        svg.setAttribute("aria-hidden", "true");
+        for (const forma of formas) {
+          if (forma[0] === "circle") {
+            const c = document.createElementNS(SVG_NS, "circle");
+            c.setAttribute("cx", forma[1]);
+            c.setAttribute("cy", forma[2]);
+            c.setAttribute("r", forma[3]);
+            svg.appendChild(c);
+          } else {
+            const p = document.createElementNS(SVG_NS, "path");
+            p.setAttribute("d", forma[1]);
+            svg.appendChild(p);
+          }
+        }
+        return svg;
+      }
+
       // --- Categorias: nome e ordem exibidos aos compradores. ---
 
       async function carregarCategorias() {
@@ -333,7 +436,9 @@
       async function garantirCategoria(nomeCategoria) {
         const chave = normalizar(nomeCategoria);
         if (categoriasLista.some((c) => c.chave === chave)) return;
-        const proximaOrdem = categoriasLista.reduce((max, c) => Math.max(max, c.ordem), 0) + 1;
+        // A nova entra sempre antes do bonus, nunca depois.
+        const normais = categoriasLista.filter((c) => !ehBonus(c.nome));
+        const proximaOrdem = normais.reduce((max, c) => Math.max(max, c.ordem), 0) + 1;
         const { data, error } = await supabase
           .from("categorias")
           .insert({ chave, nome: nomeCategoria, ordem: proximaOrdem })
@@ -346,6 +451,21 @@
           return;
         }
         categoriasLista.push(data);
+        await empurrarBonusParaOFim();
+      }
+
+      // Garante que o bonus tenha sempre a maior ordem, mesmo que uma
+      // categoria nova tenha entrado com o mesmo numero por coincidencia.
+      async function empurrarBonusParaOFim() {
+        const bonus = categoriasLista.find((c) => ehBonus(c.nome));
+        if (!bonus) return;
+        const maiorNormal = categoriasLista
+          .filter((c) => !ehBonus(c.nome))
+          .reduce((max, c) => Math.max(max, c.ordem), 0);
+        if (bonus.ordem > maiorNormal) return;
+        const novaOrdem = maiorNormal + 1;
+        const { error } = await supabase.from("categorias").update({ ordem: novaOrdem }).eq("id", bonus.id);
+        if (!error) bonus.ordem = novaOrdem;
       }
 
       function renderCategorias() {
@@ -360,56 +480,78 @@
           return;
         }
 
-        for (const cat of categoriasLista) listaCategorias.appendChild(montarLinhaCategoria(cat));
+        // Bonus sempre por ultimo na lista e fora do que se arrasta - nao da
+        // nem para soltar outro item em cima dele.
+        const normais = categoriasLista.filter((c) => !ehBonus(c.nome));
+        const bonus = categoriasLista.filter((c) => ehBonus(c.nome));
+        for (const cat of normais) listaCategorias.appendChild(montarLinhaCategoria(cat, true));
+        for (const cat of bonus) listaCategorias.appendChild(montarLinhaCategoria(cat, false));
       }
 
       let arrastandoId = null;
 
-      function montarLinhaCategoria(cat) {
+      function montarLinhaCategoria(cat, arrastavel) {
         const linha = document.createElement("div");
-        linha.className = "linha-categoria";
-        linha.draggable = true;
+        linha.className = "linha-categoria" + (arrastavel ? "" : " bonus");
+        linha.draggable = arrastavel;
         linha.dataset.id = cat.id;
 
-        const alca = document.createElement("i");
-        alca.className = "fa-solid fa-grip-vertical alca";
-        alca.setAttribute("aria-hidden", "true");
-        alca.title = "Arraste para reordenar";
+        const icone = document.createElement("span");
+        icone.className = "icone-cat";
+        icone.appendChild(montarIcone(cat.nome));
+
+        const dados = document.createElement("div");
+        dados.className = "dados-cat";
 
         const nomeInput = document.createElement("input");
         nomeInput.type = "text";
         nomeInput.value = cat.nome;
         nomeInput.setAttribute("aria-label", "Nome da categoria \"" + cat.nome + "\"");
         nomeInput.addEventListener("change", () => renomearCategoria(cat, nomeInput));
+        dados.appendChild(nomeInput);
 
         const contagem = document.createElement("span");
         contagem.className = "contagem-cat";
         const total = fornecedores.filter((f) => normalizar(f.categoria) === cat.chave).length;
         contagem.textContent = total === 1 ? "1 fornecedor" : `${total} fornecedores`;
+        dados.appendChild(contagem);
 
-        linha.append(alca, nomeInput, contagem);
+        linha.append(icone, dados);
 
-        linha.addEventListener("dragstart", (evento) => {
-          arrastandoId = cat.id;
-          linha.classList.add("arrastando");
-          evento.dataTransfer.effectAllowed = "move";
-        });
-        linha.addEventListener("dragend", () => {
-          linha.classList.remove("arrastando");
-          for (const el of listaCategoriasEl().querySelectorAll(".sobre")) el.classList.remove("sobre");
-        });
-        linha.addEventListener("dragover", (evento) => {
-          evento.preventDefault();
-          if (arrastandoId === cat.id) return;
-          linha.classList.add("sobre");
-        });
-        linha.addEventListener("dragleave", () => linha.classList.remove("sobre"));
-        linha.addEventListener("drop", (evento) => {
-          evento.preventDefault();
-          linha.classList.remove("sobre");
-          if (!arrastandoId || arrastandoId === cat.id) return;
-          reordenarCategorias(arrastandoId, cat.id);
-        });
+        if (arrastavel) {
+          const alca = document.createElement("i");
+          alca.className = "fa-solid fa-grip-vertical alca";
+          alca.setAttribute("aria-hidden", "true");
+          alca.title = "Arraste para reordenar";
+          linha.appendChild(alca);
+
+          linha.addEventListener("dragstart", (evento) => {
+            arrastandoId = cat.id;
+            linha.classList.add("arrastando");
+            evento.dataTransfer.effectAllowed = "move";
+          });
+          linha.addEventListener("dragend", () => {
+            linha.classList.remove("arrastando");
+            for (const el of listaCategoriasEl().querySelectorAll(".sobre")) el.classList.remove("sobre");
+          });
+          linha.addEventListener("dragover", (evento) => {
+            evento.preventDefault();
+            if (arrastandoId === cat.id) return;
+            linha.classList.add("sobre");
+          });
+          linha.addEventListener("dragleave", () => linha.classList.remove("sobre"));
+          linha.addEventListener("drop", (evento) => {
+            evento.preventDefault();
+            linha.classList.remove("sobre");
+            if (!arrastandoId || arrastandoId === cat.id) return;
+            reordenarCategorias(arrastandoId, cat.id);
+          });
+        } else {
+          const fixo = document.createElement("span");
+          fixo.className = "fixo";
+          fixo.innerHTML = '<i class="fa-solid fa-lock" aria-hidden="true"></i> Fixo por último';
+          linha.appendChild(fixo);
+        }
 
         return linha;
       }
@@ -418,6 +560,8 @@
         return document.getElementById("listaCategorias");
       }
 
+      // So mexe entre categorias normais - o bonus nunca entra como origem
+      // nem como alvo, porque a linha dele nao e arrastavel nem aceita drop.
       function reordenarCategorias(idArrastado, idAlvo) {
         const doIndex = categoriasLista.findIndex((c) => c.id === idArrastado);
         const paraIndex = categoriasLista.findIndex((c) => c.id === idAlvo);
@@ -429,15 +573,20 @@
       }
 
       async function salvarOrdemCategorias() {
+        // Normais na ordem do array (e quem foi arrastado), bonus sempre
+        // por ultimo - independente de onde ele esteja no array.
+        const normais = categoriasLista.filter((c) => !ehBonus(c.nome));
+        const bonus = categoriasLista.filter((c) => ehBonus(c.nome));
+        const emOrdem = [...normais, ...bonus];
         const resultados = await Promise.all(
-          categoriasLista.map((cat, i) => supabase.from("categorias").update({ ordem: i + 1 }).eq("id", cat.id))
+          emOrdem.map((cat, i) => supabase.from("categorias").update({ ordem: i + 1 }).eq("id", cat.id))
         );
         const falhou = resultados.find((r) => r.error);
         if (falhou) {
           avisar("Não consegui salvar a nova ordem: " + falhou.error.message, false);
           return;
         }
-        categoriasLista.forEach((cat, i) => (cat.ordem = i + 1));
+        emOrdem.forEach((cat, i) => (cat.ordem = i + 1));
       }
 
       // Renomear precisa acontecer em dois lugares: a linha em `categorias`

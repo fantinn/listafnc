@@ -181,8 +181,47 @@
       .destaque i { color: var(--sky); font-size: 1rem; margin-top: 2px; flex-shrink: 0; }
       .destaque strong { color: #fff; }
 
+      /* Aviso de acesso individual, mostrado a cada entrada na area. */
+      .fundo-aviso {
+        position: fixed; inset: 0; z-index: 300;
+        display: flex; align-items: center; justify-content: center;
+        padding: 20px;
+        background: rgba(3,4,6,0.86);
+        backdrop-filter: blur(6px);
+        overflow-y: auto;
+      }
+      .caixa-aviso {
+        position: relative;
+        width: 100%; max-width: 520px; margin: auto;
+        padding: 28px;
+        border-radius: 18px;
+        background: var(--darker);
+        border: 1px solid rgba(248,113,113,0.4);
+        box-shadow: 0 30px 60px -20px rgba(0,0,0,0.9);
+        text-align: left;
+      }
+      .caixa-aviso .selo {
+        display: inline-flex; align-items: center; gap: 9px;
+        padding: 7px 13px; border-radius: 999px; margin-bottom: 16px;
+        background: rgba(248,113,113,0.14); color: #f87171;
+        font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .caixa-aviso h2 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.35rem; font-weight: 700; line-height: 1.25; margin-bottom: 16px;
+      }
+      .caixa-aviso p {
+        font-size: 0.88rem; line-height: 1.65;
+        color: rgba(232,240,255,0.75); margin-bottom: 12px;
+      }
+      .caixa-aviso strong { color: #fff; font-weight: 600; }
+      .caixa-aviso .grave { color: #fca5a5; font-weight: 600; }
+      .caixa-aviso .btn-blue { width: 100%; margin-top: 10px; justify-content: center; }
+
       @media (max-width: 640px) {
         .topo .quem { display: none; }
+        .caixa-aviso { padding: 22px 20px; }
+        .caixa-aviso h2 { font-size: 1.15rem; }
         .grade { grid-template-columns: 1fr; }
 
         /* Duas colunas: em coluna única só cabiam ~2 categorias na tela e
@@ -205,6 +244,28 @@
         <button class="btn-ghost" id="sair" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
       </div>
     </header>
+
+    <!-- Aviso obrigatorio: aparece a cada entrada na area de membros. -->
+    <div class="fundo-aviso" id="fundoAviso" hidden role="dialog" aria-modal="true" aria-labelledby="tituloAviso">
+      <div class="caixa-aviso">
+        <span class="selo"><i class="fa-solid fa-triangle-exclamation"></i> Atenção</span>
+        <h2 id="tituloAviso">Acesso individual</h2>
+        <p>
+          O acesso à Lista de Fornecedores é
+          <strong>pessoal, exclusivo e intransferível</strong>.
+        </p>
+        <p>
+          É <strong>proibido</strong> compartilhar login, senha ou permitir o acesso de terceiros.
+        </p>
+        <p>
+          Caso sejam identificados acessos indevidos ou compartilhamento da conta,
+          <span class="grave">o acesso à plataforma será bloqueado</span> e o usuário
+          <span class="grave">perderá o acesso à lista</span>.
+        </p>
+        <p>Para voltar a acessar, será necessário adquirir um novo acesso.</p>
+        <button class="btn-blue" id="fecharAviso" type="button">Li e entendi</button>
+      </div>
+    </div>
 
     <div class="conteudo">
       <div class="estado" id="estado">
@@ -285,6 +346,19 @@
         throw new Error("sessao invalida");
       }
       document.getElementById("quem").textContent = user.email;
+
+      // 1b. Aviso de acesso individual. So depois de validar a sessao, senao
+      //     ele pisca na tela de quem esta sendo mandado de volta ao login.
+      //     Sai unicamente pelo botao: e um aviso que precisa ser lido.
+      const fundoAviso = document.getElementById("fundoAviso");
+      const fecharAviso = document.getElementById("fecharAviso");
+      fundoAviso.hidden = false;
+      document.body.style.overflow = "hidden";
+      fecharAviso.focus();
+      fecharAviso.addEventListener("click", () => {
+        fundoAviso.hidden = true;
+        document.body.style.overflow = "";
+      });
 
       document.getElementById("sair").addEventListener("click", async () => {
         await supabase.auth.signOut();

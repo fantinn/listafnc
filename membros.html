@@ -55,20 +55,49 @@
       .busca input:focus { outline: none; border-color: var(--blue); background: rgba(0,102,255,0.08); }
       .busca input::placeholder { color: rgba(232,240,255,0.28); }
 
-      .filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      /* Uma faixa só, com rolagem lateral. Com 10 categorias o flex-wrap
+         jogava os chips em três linhas e deixava tudo desalinhado. */
+      .filtros {
+        display: flex; gap: 8px; margin-top: 14px;
+        overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+        scroll-behavior: smooth;
+      }
+      .filtros::-webkit-scrollbar { display: none; }
+
+      /* O fade só entra quando sobra conteúdo para o lado (classe posta
+         pelo JS), senão o último chip apareceria apagado à toa. */
+      .filtros.fade-dir {
+        mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+      }
+
       .chip {
-        padding: 7px 14px; border-radius: 999px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.12);
-        color: rgba(232,240,255,0.7);
+        flex-shrink: 0;
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 14px; border-radius: 10px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(232,240,255,0.65);
         font-family: "Inter", sans-serif;
-        font-size: 0.72rem; letter-spacing: 0.06em; cursor: pointer;
+        font-size: 0.76rem; font-weight: 500; white-space: nowrap;
+        cursor: pointer;
         transition: background 0.15s, color 0.15s, border-color 0.15s;
       }
-      .chip:hover { background: rgba(255,255,255,0.1); }
-      .chip.ativo { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 600; }
+      .chip:hover { background: rgba(255,255,255,0.09); color: rgba(232,240,255,0.92); }
+      .chip .qtd {
+        font-size: 0.68rem; font-weight: 600;
+        color: rgba(232,240,255,0.38);
+        font-variant-numeric: tabular-nums;
+      }
+      .chip.ativo {
+        background: var(--blue); border-color: var(--blue);
+        color: #fff; font-weight: 600;
+      }
+      .chip.ativo .qtd { color: rgba(255,255,255,0.72); }
 
       .contagem { margin: 18px 0 14px; font-size: 0.75rem; letter-spacing: 0.1em; color: rgba(232,240,255,0.4); text-transform: uppercase; }
+      /* Sem a linha de contagem, a grade precisa da folga que era dela. */
+      .contagem[hidden] + .grade { margin-top: 20px; }
 
       .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 
@@ -275,22 +304,50 @@
         return "https://wa.me/" + (numero.length <= 11 ? "55" + numero : numero);
       }
 
+      // Mostra o fade da direita só enquanto houver chip escondido pra lá.
+      function atualizarFade() {
+        const sobra = filtros.scrollWidth - filtros.clientWidth;
+        filtros.classList.toggle("fade-dir", sobra > 4 && filtros.scrollLeft < sobra - 4);
+      }
+
       function montarFiltros() {
-        const todas = [...new Set(fornecedores.map((f) => f.categoria).filter(Boolean))].sort();
+        const porCategoria = new Map();
+        for (const f of fornecedores) {
+          if (!f.categoria) continue;
+          porCategoria.set(f.categoria, (porCategoria.get(f.categoria) ?? 0) + 1);
+        }
+
+        const todas = [...porCategoria.keys()].sort();
         if (todas.length === 0) return;
+
         for (const nome of ["Todos", ...todas]) {
           const chip = document.createElement("button");
+          chip.type = "button";
           chip.className = "chip" + (nome === "Todos" ? " ativo" : "");
-          chip.textContent = nome;
           chip.dataset.categoria = nome === "Todos" ? "" : nome;
+
+          const rotulo = document.createElement("span");
+          rotulo.textContent = nome;
+
+          const qtd = document.createElement("span");
+          qtd.className = "qtd";
+          qtd.textContent = nome === "Todos" ? fornecedores.length : porCategoria.get(nome);
+
+          chip.append(rotulo, qtd);
           chip.addEventListener("click", () => {
             categoriaAtiva = chip.dataset.categoria;
             filtros.querySelectorAll(".chip").forEach((c) => c.classList.remove("ativo"));
             chip.classList.add("ativo");
+            // Puxa o chip clicado para dentro da faixa visível.
+            chip.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
             render();
           });
           filtros.appendChild(chip);
         }
+
+        atualizarFade();
+        filtros.addEventListener("scroll", atualizarFade, { passive: true });
+        window.addEventListener("resize", atualizarFade);
       }
 
       // Monta por DOM, nunca por innerHTML: o conteudo vem do banco e nao
@@ -369,10 +426,13 @@
           return termo.split(/\s+/).every((parte) => alvo.includes(parte));
         });
 
-        contagem.textContent =
-          visiveis.length === fornecedores.length
-            ? `${fornecedores.length} fornecedores`
-            : `${visiveis.length} de ${fornecedores.length} fornecedores`;
+        // Sem filtro o total já aparece no chip "Todos", então essa linha
+        // só entra quando a busca ou a categoria reduz o resultado.
+        const filtrando = visiveis.length !== fornecedores.length;
+        contagem.hidden = !filtrando;
+        if (filtrando) {
+          contagem.textContent = `${visiveis.length} de ${fornecedores.length} fornecedores`;
+        }
 
         grade.replaceChildren();
 

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Acessar minha lista | Lista de Fornecedores</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="area.css" />
+
+    <style>
+      body { display: flex; align-items: center; justify-content: center; padding: 32px 20px; }
+
+      .card {
+        position: relative; z-index: 10;
+        width: 100%; max-width: 420px;
+        background: var(--darker);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 20px;
+        padding: 40px 32px;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+      }
+      .card::before {
+        content: "";
+        position: absolute; inset: -1px;
+        border-radius: 20px;
+        background: radial-gradient(60% 50% at 50% 0%, rgba(0,102,255,0.35), transparent 70%);
+        pointer-events: none; z-index: -1;
+      }
+
+      .brand { display: flex; justify-content: center; margin-bottom: 28px; }
+      .brand img { height: 46px; width: auto; }
+
+      h1 {
+        font-size: 1.25rem; font-weight: 700; text-align: center;
+        letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px;
+      }
+      .subtitle {
+        text-align: center; font-size: 0.82rem; line-height: 1.5;
+        color: rgba(232,240,255,0.55); margin-bottom: 28px;
+      }
+
+      label {
+        display: block; font-size: 0.7rem; letter-spacing: 0.14em;
+        text-transform: uppercase; color: rgba(232,240,255,0.6); margin-bottom: 8px;
+      }
+      .field { margin-bottom: 18px; }
+      input {
+        width: 100%; padding: 15px 16px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 12px;
+        color: var(--light); font-family: "Inter", sans-serif; font-size: 0.95rem;
+        transition: border-color 0.2s, background 0.2s;
+      }
+      input:focus {
+        outline: none;
+        border-color: var(--blue);
+        background: rgba(0,102,255,0.08);
+      }
+      input::placeholder { color: rgba(232,240,255,0.28); }
+
+      .erro {
+        display: none;
+        align-items: flex-start; gap: 10px;
+        background: rgba(248,113,113,0.1);
+        border: 1px solid rgba(248,113,113,0.3);
+        border-radius: 10px;
+        padding: 12px 14px; margin-bottom: 18px;
+        font-size: 0.8rem; line-height: 1.45; color: #fca5a5;
+      }
+      .erro.visivel { display: flex; }
+
+      form .btn-blue { width: 100%; margin-top: 6px; }
+
+      .ajuda {
+        margin-top: 26px; padding-top: 22px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        text-align: center; font-size: 0.76rem; line-height: 1.6;
+      }
+      .ajuda a { color: var(--sky); text-decoration: none; }
+      .ajuda a:hover { text-decoration: underline; }
+      .ajuda p + p { margin-top: 10px; }
+
+      #carregando {
+        position: fixed; inset: 0; z-index: 50;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--dark); color: rgba(232,240,255,0.5); font-size: 0.85rem;
+      }
+      #carregando.oculto { display: none; }
+    </style>
+  </head>
+
+  <body class="grid-bg">
+    <div id="carregando"><i class="fa-solid fa-circle-notch fa-spin" style="margin-right:10px;"></i> Verificando acesso...</div>
+
+    <main class="card" id="card" hidden>
+      <div class="brand"><img src="logo.png" alt="Lista de Fornecedores" /></div>
+
+      <h1>Área do comprador</h1>
+      <p class="subtitle">Entre com o e-mail que você usou na compra e a senha que enviamos junto com a confirmação.</p>
+
+      <div class="erro" id="erro">
+        <i class="fa-solid fa-triangle-exclamation" style="margin-top:2px;"></i>
+        <span id="erroTexto"></span>
+      </div>
+
+      <form id="form" novalidate>
+        <div class="field">
+          <label for="email">E-mail da compra</label>
+          <input type="email" id="email" name="email" autocomplete="email" placeholder="seuemail@exemplo.com" required />
+        </div>
+
+        <div class="field">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" name="senha" autocomplete="current-password" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit" class="btn-blue" id="botao">
+          <i class="fa-solid fa-lock-open"></i> Acessar a lista
+        </button>
+      </form>
+
+      <div class="ajuda">
+        <p class="text-faint">Perdeu a senha ou não recebeu o acesso?</p>
+        <p><a id="suporte" href="#" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Falar com o suporte</a></p>
+        <p><a href="index.html">Voltar para a página inicial</a></p>
+      </div>
+    </main>
+
+    <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/+esm";
+      import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, WHATSAPP } from "./supabase-config.js";
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+      const carregando = document.getElementById("carregando");
+      const card = document.getElementById("card");
+      const form = document.getElementById("form");
+      const botao = document.getElementById("botao");
+      const erro = document.getElementById("erro");
+      const erroTexto = document.getElementById("erroTexto");
+
+      document.getElementById("suporte").href = WHATSAPP;
+
+      function mostrarErro(mensagem) {
+        erroTexto.textContent = mensagem;
+        erro.classList.add("visivel");
+      }
+
+      function limparErro() {
+        erro.classList.remove("visivel");
+      }
+
+      // Ja logado? vai direto para a area de membros.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        window.location.replace("membros.html");
+      } else {
+        carregando.classList.add("oculto");
+        card.hidden = false;
+      }
+
+      form.addEventListener("submit", async (evento) => {
+        evento.preventDefault();
+        limparErro();
+
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        const password = document.getElementById("senha").value;
+
+        if (!email || !password) {
+          mostrarErro("Preencha o e-mail e a senha.");
+          return;
+        }
+
+        botao.disabled = true;
+        botao.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Entrando...';
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          // Mensagem unica de proposito: nao revela se o e-mail existe.
+          mostrarErro("E-mail ou senha inválidos. Confira os dados que enviamos na confirmação da compra.");
+          botao.disabled = false;
+          botao.innerHTML = '<i class="fa-solid fa-lock-open"></i> Acessar a lista';
+          return;
+        }
+
+        window.location.replace("membros.html");
+      });
+    </script>
+  </body>
+</html>

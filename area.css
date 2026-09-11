@@ -1,0 +1,68 @@
+/* Estilos compartilhados pela area de acesso (login.html e membros.html).
+   Mesmas variaveis e tipografia do index.html, sem os gatilhos da landing. */
+
+:root {
+  --blue: #0066ff;
+  --sky: #60a5fa;
+  --dark: #030406;
+  --darker: #080c12;
+  --light: #e8f0ff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+/* clip, nao hidden: overflow-x:hidden cria um contexto de rolagem e
+   quebra position:sticky em tudo que esta dentro (a barra de busca parava
+   de grudar no topo). clip corta igual sem esse efeito colateral. */
+html { overflow-x: clip; }
+
+body {
+  min-height: 100vh;
+  background-color: var(--dark);
+  color: var(--light);
+  font-family: "Inter", sans-serif;
+  overflow-x: clip;
+  overflow-wrap: anywhere;
+}
+
+.grid-bg::before {
+  content: "";
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none; z-index: 0; opacity: 0.5;
+}
+
+.font-display { font-family: "Space Grotesk", sans-serif; }
+h1, h2, h3 { font-family: "Space Grotesk", sans-serif; }
+
+.btn-blue {
+  position: relative; overflow: hidden;
+  background: var(--blue); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 18px 32px; border-radius: 14px;
+  font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 1rem;
+  text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer; border: none;
+}
+.btn-blue:hover:not(:disabled) { transform: scale(1.03); }
+.btn-blue:disabled { opacity: 0.55; cursor: progress; }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
+  text-decoration: none; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+.text-faint { color: rgba(232,240,255,0.45); }
+
+/* O atributo hidden perde para qualquer display explicito (flex, grid...).
+   Sem isto, blocos como .estado continuam na tela depois de ocultados. */
+[hidden] { display: none !important; }

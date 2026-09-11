@@ -57,3 +57,69 @@ A página foi desenvolvida para atingir altos índices em métricas de Web Vital
 
 7. Licença e Autoria
 Projeto desenvolvido por fantinn. Uso permitido para fins de implementação comercial e estudo de arquitetura de front-end.
+
+## 8. Área de Membros
+
+A entrega deixou de ser um link do Canva repassado à mão. A lista de fornecedores virou **dados**, não arquivo: fica numa tabela do Supabase, atrás de login, com busca para o comprador e edição item a item para o admin.
+
+### 8.1. Componentes
+
+| Arquivo | Função |
+| --- | --- |
+| `login.html` | Autenticação (e-mail + senha). |
+| `membros.html` | Lista do comprador: busca, filtro por categoria, botão de WhatsApp. |
+| `admin.html` | Painel do admin: adicionar, editar, ocultar e remover fornecedores. |
+| `area.css` | Estilos compartilhados pelas três páginas. |
+| `supabase-config.js` | URL e chave pública do projeto. |
+| `admin/criar-membro.mjs` | Cadastra comprador (ou admin, com `--admin`). |
+| `admin/importar-fornecedores.mjs` | Importa a lista inteira de um CSV. |
+
+O front continua 100% estático no GitHub Pages. A validação acontece no Supabase, porque o Pages não executa código de servidor nem guarda segredo.
+
+### 8.2. Modelo de acesso
+
+Três camadas, todas no banco — a interface só reflete o que a RLS já decide:
+
+- **anon** (não logado): não lê nada. Nem fornecedores, nem membros.
+- **comprador**: lê apenas fornecedores com `ativo = true`. Não insere, não altera, não remove. Da própria linha em `membros` só pode escrever `ultimo_acesso` — o corte é por `GRANT` de coluna, porque RLS controla linhas, não colunas. Sem isso ele se promoveria a admin com um `PATCH`.
+- **admin** (`membros.admin = true`): lê tudo, inclusive os ocultos, e é o único que escreve.
+
+Estar logado **não** basta em lugar nenhum: toda política exige linha em `membros`. Sem isso, qualquer pessoa criaria conta pelo signup público do Supabase e leria a lista sem comprar.
+
+A senha segue `<parte antes do @>` + `fnc` + 4 caracteres aleatórios (`gabriel@gmail.com` → `gabrielfnc7k2p`). O sufixo é sorteado, não sequencial: com numeração previsível bastavam 99 tentativas para entrar na conta de outro comprador, e o Supabase não bloqueia tentativas repetidas de senha.
+
+### 8.3. Liberar um comprador
+
+```bash
+cd admin
+npm install                        # apenas na primeira vez
+cp .env.example .env               # cole a service_role key
+node criar-membro.mjs comprador@email.com
+```
+
+O script imprime a mensagem pronta para enviar. Para criar ou promover um admin, acrescente `--admin`.
+
+A `service_role` key fica somente em `admin/.env` (ignorado pelo Git) e nunca pode aparecer em arquivo publicado.
+
+### 8.4. Manter a lista
+
+Edição do dia a dia é em `admin.html`: trocar um telefone leva segundos e o comprador vê no acesso seguinte, sem publicar nada. Para carregar a lista inteira de uma vez:
+
+```bash
+node admin/importar-fornecedores.mjs lista.csv --substituir
+```
+
+Colunas aceitas: `nome` (obrigatória), `categoria`, `telefone`, `instagram`, `cidade`, `estado`, `observacoes`.
+
+Use **ocultar** em vez de remover quando a saída for temporária: o registro some para o comprador e continua no painel.
+
+### 8.5. Limites conhecidos
+
+1. **Repasse do próprio login.** Nada impede um comprador de dar e-mail e senha para outra pessoa. Não há limite de dispositivo nem detecção de sessão simultânea.
+2. **Cópia do conteúdo.** Quem tem acesso legítimo consegue copiar os dados da tela ou pela aba Network. Vale para qualquer área de membros.
+
+Ou seja: protege contra estranhos, não contra o próprio comprador.
+
+### 8.6. Bucket `material`
+
+O bucket privado continua provisionado, com política de leitura restrita a membros, mas nenhuma página o usa desde que a lista virou tabela. Está disponível caso volte a fazer sentido distribuir um arquivo.

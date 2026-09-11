@@ -1,0 +1,12 @@
+# Segredos - a service_role key nunca pode ir para o repositorio
+.env
+admin/.env
+
+# Dependencias dos scripts locais de administracao
+node_modules/
+admin/node_modules/
+admin/package-lock.json
+
+# Sistema
+.DS_Store
+Thumbs.db

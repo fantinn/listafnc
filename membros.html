@@ -109,6 +109,15 @@
 
       .aviso { margin-top: 40px; text-align: center; font-size: 0.72rem; line-height: 1.6; color: rgba(232,240,255,0.3); }
 
+      .destaque {
+        display: flex; align-items: flex-start; gap: 12px;
+        padding: 14px 16px; border-radius: 12px; margin-bottom: 18px;
+        background: rgba(0,102,255,0.1); border: 1px solid rgba(0,102,255,0.35);
+        font-size: 0.82rem; line-height: 1.5; color: rgba(232,240,255,0.9);
+      }
+      .destaque i { color: var(--sky); font-size: 1rem; margin-top: 2px; flex-shrink: 0; }
+      .destaque strong { color: #fff; }
+
       @media (max-width: 640px) {
         .topo .quem { display: none; }
         .grade { grid-template-columns: 1fr; }
@@ -133,6 +142,10 @@
       </div>
 
       <div id="painel" hidden>
+        <p class="destaque">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>Ao chamar qualquer contato desta lista, avise que foi indicação da <strong>LSD Outlet</strong> para ter aquela atenção diferenciada dos fornecedores e dos contatos bônus.</span>
+        </p>
         <div class="busca-area">
           <div class="busca">
             <i class="fa-solid fa-magnifying-glass"></i>

@@ -5,7 +5,7 @@
  *   node admin/importar-fornecedores.mjs lista.csv --substituir
  *
  * Colunas aceitas (a ordem nao importa, so o cabecalho):
- *   nome, categoria, telefone, instagram, cidade, estado, observacoes
+ *   nome, categoria, telefone, instagram
  * Apenas "nome" e obrigatorio.
  *
  * Por padrao acrescenta ao que ja existe. Com --substituir, apaga tudo
@@ -70,7 +70,7 @@ function lerCsv(texto) {
   return linhas.filter((l) => l.some((c) => c.trim() !== ""));
 }
 
-const COLUNAS = ["nome", "categoria", "telefone", "instagram", "cidade", "estado", "observacoes"];
+const COLUNAS = ["nome", "categoria", "telefone", "instagram"];
 
 const argumentos = process.argv.slice(2);
 const substituir = argumentos.includes("--substituir");
@@ -113,7 +113,7 @@ linhas.slice(1).forEach((linha, indice) => {
     ignoradas.push(indice + 2);
     return;
   }
-  if (registro.estado) registro.estado = registro.estado.toUpperCase().slice(0, 2);
+  if (registro.instagram) registro.instagram = registro.instagram.replace(/^@+/, "").trim() || null;
   registros.push(registro);
 });
 

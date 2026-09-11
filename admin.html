@@ -47,6 +47,7 @@
       .campo { display: flex; flex-direction: column; gap: 6px; }
       .campo.largo { grid-column: 1 / -1; }
       label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(232,240,255,0.55); }
+      label .opcional { color: rgba(232,240,255,0.3); letter-spacing: 0.06em; }
       input, textarea, select {
         width: 100%; padding: 12px 14px;
         background: rgba(255,255,255,0.05);
@@ -165,20 +166,8 @@
               <input id="telefone" placeholder="27 99999-9999" />
             </div>
             <div class="campo">
-              <label for="instagram">Instagram</label>
+              <label for="instagram">Instagram <span class="opcional">(opcional)</span></label>
               <input id="instagram" placeholder="@perfil" />
-            </div>
-            <div class="campo">
-              <label for="cidade">Cidade</label>
-              <input id="cidade" placeholder="Vitória" />
-            </div>
-            <div class="campo">
-              <label for="estado">UF</label>
-              <input id="estado" maxlength="2" placeholder="ES" />
-            </div>
-            <div class="campo largo">
-              <label for="observacoes">Observações</label>
-              <textarea id="observacoes" placeholder="Pedido mínimo, prazo de entrega, condições..."></textarea>
             </div>
           </div>
           <div class="barra-form">
@@ -214,7 +203,7 @@
       const btCancelar = document.getElementById("cancelar");
       const btSalvar = document.getElementById("salvar");
 
-      const campos = ["nome", "categoria", "telefone", "instagram", "cidade", "estado", "observacoes"];
+      const campos = ["nome", "categoria", "telefone", "instagram"];
       const el = Object.fromEntries(campos.map((c) => [c, document.getElementById(c)]));
 
       let editandoId = null;
@@ -296,7 +285,7 @@
       function render() {
         const termo = normalizar(campoBusca.value.trim());
         const visiveis = fornecedores.filter((f) =>
-          !termo || normalizar([f.nome, f.categoria, f.cidade, f.estado, f.observacoes].join(" ")).includes(termo)
+          !termo || normalizar([f.nome, f.categoria, f.telefone, f.instagram].join(" ")).includes(termo)
         );
 
         document.getElementById("tituloLista").textContent =
@@ -332,7 +321,7 @@
 
         const meta = document.createElement("span");
         meta.className = "meta";
-        meta.textContent = [f.categoria, [f.cidade, f.estado].filter(Boolean).join(" - "), f.telefone]
+        meta.textContent = [f.categoria, f.telefone, f.instagram]
           .filter(Boolean).join("  •  ") || "sem dados de contato";
         info.appendChild(meta);
 
@@ -413,7 +402,8 @@
           avisar("O nome é obrigatório.", false);
           return;
         }
-        if (dados.estado) dados.estado = dados.estado.toUpperCase();
+        // Guarda o @ sempre no mesmo formato, sem o arroba.
+        if (dados.instagram) dados.instagram = dados.instagram.replace(/^@+/, "").trim() || null;
 
         btSalvar.disabled = true;
 

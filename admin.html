@@ -440,6 +440,11 @@
         categoriasLista.forEach((cat, i) => (cat.ordem = i + 1));
       }
 
+      // Renomear precisa acontecer em dois lugares: a linha em `categorias`
+      // (nome + chave, que ordem/icone usam para achar essa categoria) e o
+      // texto solto em fornecedores.categoria de quem ja esta nela - senao
+      // o nome antigo continua preso nos fornecedores existentes e volta a
+      // aparecer sozinho no formulario (o datalist le direto de la).
       async function renomearCategoria(cat, input) {
         const novoNome = input.value.trim();
         if (!novoNome) {
@@ -447,14 +452,38 @@
           return;
         }
         if (novoNome === cat.nome) return;
-        const { error } = await supabase.from("categorias").update({ nome: novoNome }).eq("id", cat.id);
-        if (error) {
-          avisar("Não consegui renomear: " + error.message, false);
+
+        const nomeAntigo = cat.nome;
+        const novaChave = normalizar(novoNome);
+
+        const { error: erroFornecedores } = await supabase
+          .from("fornecedores")
+          .update({ categoria: novoNome })
+          .eq("categoria", nomeAntigo);
+        if (erroFornecedores) {
+          avisar("Não consegui renomear: " + erroFornecedores.message, false);
           input.value = cat.nome;
           return;
         }
+
+        const { error } = await supabase
+          .from("categorias")
+          .update({ nome: novoNome, chave: novaChave })
+          .eq("id", cat.id);
+        if (error) {
+          // Os fornecedores ja foram renomeados; so a linha de categorias
+          // ficou com o nome velho. Recarregar reflete o estado real.
+          avisar("Não consegui renomear a categoria: " + error.message, false);
+          input.value = cat.nome;
+          await carregar();
+          return;
+        }
+
         cat.nome = novoNome;
+        cat.chave = novaChave;
         avisar("Categoria renomeada.");
+        await carregar();
+        renderCategorias();
       }
 
       function render() {

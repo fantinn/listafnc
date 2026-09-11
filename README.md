@@ -123,3 +123,85 @@ Ou seja: protege contra estranhos, não contra o próprio comprador.
 ### 8.6. Bucket `material`
 
 O bucket privado continua provisionado, com política de leitura restrita a membros, mas nenhuma página o usa desde que a lista virou tabela. Está disponível caso volte a fazer sentido distribuir um arquivo.
+
+## 9. Liberação automática de acesso (PerfectPay)
+
+Antes, cada comprador era cadastrado à mão com `admin/criar-membro.mjs`. Agora o
+caminho é automático, em duas peças.
+
+### 9.1. Como funciona
+
+```
+Comprador paga  →  PerfectPay  →  POST  →  Edge Function "perfectpay"
+                                             valida o token, grava em "compras"
+                                             (e revoga acesso em reembolso)
+
+PerfectPay redireciona  →  ativar.html  →  Edge Function "ativar"
+                           e-mail + CPF     confere a compra e cria a conta
+                                            a senha aparece na tela
+```
+
+A conta **não** é criada pelo postback. Quem cria é a página de ativação, quando
+o comprador confirma e-mail e CPF. Assim uma venda com e-mail digitado errado não
+vira conta órfã, e não é preciso enviar e-mail nenhum — o que elimina o maior
+gerador de suporte desse tipo de entrega ("não recebi", "caiu no spam").
+
+O CPF entra como segunda prova porque só o e-mail seria fraco: quem soubesse que
+alguém comprou poderia ativar a conta dessa pessoa antes dela. Guardamos apenas o
+hash SHA-256 do CPF, nunca o número.
+
+### 9.2. Configuração (uma vez)
+
+1. **Segredo do postback.** Pegue o token em PerfectPay → Ferramentas → Webhook de
+   vendas e grave no Supabase (nunca no repositório):
+
+   ```bash
+   supabase secrets set PERFECTPAY_TOKEN=o_token_de_32_caracteres --project-ref syikoanvfyhzyefptbtn
+   ```
+
+   Enquanto esse segredo não existir a função responde `503` e **não processa nada** —
+   falha fechada de propósito.
+
+2. **URL do webhook**, em PerfectPay → Ferramentas → Webhook de vendas:
+
+   ```
+   https://syikoanvfyhzyefptbtn.supabase.co/functions/v1/perfectpay
+   ```
+
+3. **Página de obrigado**, em Produtos → o produto → "Link da página de pagamento
+   aprovado":
+
+   ```
+   https://listafnc.com.br/ativar.html
+   ```
+
+### 9.3. Publicar as funções
+
+```bash
+supabase functions deploy perfectpay --no-verify-jwt
+supabase functions deploy ativar --no-verify-jwt
+```
+
+`--no-verify-jwt` é obrigatório nas duas: a PerfectPay não tem JWT do Supabase, e
+o comprador ainda não tem conta. Cada função faz a própria autenticação — token do
+postback numa, compra aprovada + CPF na outra.
+
+### 9.4. Status de venda tratados
+
+| `sale_status_enum` | Significado | Efeito |
+|---|---|---|
+| 2 | approved | libera a ativação |
+| 6, 7, 9, 10 | devolução, reembolso, chargeback, cancelada | `membros.ativo = false` |
+
+Desativar corta o acesso **na hora**, mesmo com sessão já aberta: a RLS é avaliada
+a cada requisição. O comprador ainda consegue entrar na conta, mas não vê nenhum
+fornecedor — é também o botão para cortar quem compartilhou o login.
+
+### 9.5. O que ainda não foi validado com venda real
+
+O mapeamento do payload (`customer.email`, `customer.identification_number`,
+`code`, `sale_amount`) veio da documentação, não de uma venda observada. A função
+grava o payload cru em `compras.payload`, então na primeira venda de verdade dá
+para conferir os nomes dos campos e ajustar se preciso. Se o CPF não for gravado,
+a página de ativação avisa o comprador para falar com o suporte em vez de recusar
+sem explicação.

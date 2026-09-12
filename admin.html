@@ -314,6 +314,11 @@
               <button type="button" class="btn-blue" id="copiarCred"><i class="fa-regular fa-copy"></i> Copiar mensagem pronta</button>
             </div>
           </div>
+
+          <div class="painel">
+            <h2 id="tituloMembros">Compradores cadastrados</h2>
+            <div id="listaMembros"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -348,6 +353,17 @@
           ok ? "fa-solid fa-circle-check" : "fa-solid fa-triangle-exclamation";
         document.getElementById("recadoTexto").textContent = texto;
         if (ok) setTimeout(() => recado.classList.remove("visivel"), 4000);
+      }
+
+      // invoke() so entrega o status; a mensagem que escrevemos na funcao
+      // fica no corpo da resposta, que vem em error.context.
+      async function mensagemDoErro(error, padrao) {
+        try {
+          const corpo = await error.context?.json();
+          return corpo?.erro || padrao;
+        } catch {
+          return padrao;
+        }
       }
 
       // 1. Precisa de sessao valida no servidor, nao so no navegador.
@@ -870,14 +886,7 @@
           });
 
           if (error) {
-            // invoke() so entrega o status; a mensagem que escrevemos na
-            // funcao fica no corpo da resposta, que vem em error.context.
-            let mensagem = "Não consegui criar o acesso.";
-            try {
-              const corpo = await error.context?.json();
-              if (corpo?.erro) mensagem = corpo.erro;
-            } catch { /* sem corpo legivel: fica a mensagem generica */ }
-            avisar(mensagem, false);
+            avisar(await mensagemDoErro(error, "Não consegui criar o acesso."), false);
             return;
           }
 
@@ -886,6 +895,7 @@
           credencial.hidden = false;
           formAcesso.reset();
           avisar("Acesso criado. Copie a senha agora.");
+          await carregarMembros();
         } finally {
           btCriarAcesso.disabled = false;
         }
@@ -927,9 +937,116 @@
         }
       });
 
+      // --- Lista de compradores cadastrados ---
+
+      const listaMembros = document.getElementById("listaMembros");
+      const tituloMembros = document.getElementById("tituloMembros");
+
+      function formatarData(iso) {
+        if (!iso) return null;
+        return new Date(iso).toLocaleString("pt-BR", {
+          day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit",
+        });
+      }
+
+      async function carregarMembros() {
+        const { data, error } = await supabase.functions.invoke("gerenciar-membros", {
+          body: { acao: "listar" },
+        });
+
+        if (error) {
+          listaMembros.replaceChildren();
+          const erro = document.createElement("p");
+          erro.style.cssText = "font-size:0.85rem;color:#fca5a5;padding:8px 0;";
+          erro.textContent = await mensagemDoErro(error, "Não consegui carregar os compradores.");
+          listaMembros.appendChild(erro);
+          return;
+        }
+
+        renderMembros(data.membros ?? []);
+      }
+
+      function renderMembros(membros) {
+        tituloMembros.textContent = `Compradores cadastrados (${membros.length})`;
+        listaMembros.replaceChildren();
+
+        if (membros.length === 0) {
+          const vazio = document.createElement("p");
+          vazio.style.cssText = "font-size:0.85rem;color:rgba(232,240,255,0.45);padding:8px 0;";
+          vazio.textContent = "Nenhum comprador cadastrado ainda.";
+          listaMembros.appendChild(vazio);
+          return;
+        }
+
+        for (const m of membros) listaMembros.appendChild(montarLinhaMembro(m));
+      }
+
+      function montarLinhaMembro(m) {
+        const linha = document.createElement("div");
+        linha.className = "linha" + (m.ativo ? "" : " inativo");
+
+        const info = document.createElement("div");
+        info.className = "info";
+
+        const nome = document.createElement("span");
+        nome.className = "nome";
+        nome.textContent = m.email + (m.admin ? "  (admin)" : "") + (!m.admin && !m.ativo ? "  (bloqueado)" : "");
+        info.appendChild(nome);
+
+        const meta = document.createElement("span");
+        meta.className = "meta";
+        const partes = [];
+        if (m.criado_em) partes.push("criado em " + formatarData(m.criado_em));
+        partes.push(m.ultimo_acesso ? "último acesso em " + formatarData(m.ultimo_acesso) : "nunca acessou");
+        if (!m.admin && !m.ativo && m.motivo_desativacao) partes.push(m.motivo_desativacao);
+        meta.textContent = partes.join("  •  ");
+        info.appendChild(meta);
+
+        linha.appendChild(info);
+
+        // Admin nao vira alvo de bloqueio por aqui - a funcao recusa mesmo
+        // que o botao aparecesse, mas nem mostrar o botao e mais honesto.
+        if (!m.admin) {
+          const botoes = document.createElement("div");
+          botoes.className = "botoes";
+          const alternar = document.createElement("button");
+          alternar.type = "button";
+          alternar.title = m.ativo ? "Bloquear acesso" : "Reativar acesso";
+          alternar.innerHTML = m.ativo ? '<i class="fa-solid fa-lock"></i>' : '<i class="fa-solid fa-lock-open"></i>';
+          alternar.addEventListener("click", () => alternarMembro(m, alternar));
+          botoes.appendChild(alternar);
+          linha.appendChild(botoes);
+        }
+
+        return linha;
+      }
+
+      async function alternarMembro(m, botao) {
+        const pergunta = m.ativo
+          ? `Bloquear o acesso de ${m.email}? Ele para de conseguir entrar até você reativar.`
+          : `Reativar o acesso de ${m.email}?`;
+        if (!confirm(pergunta)) return;
+
+        botao.disabled = true;
+        try {
+          const { data, error } = await supabase.functions.invoke("gerenciar-membros", {
+            body: { acao: "alternar", email: m.email },
+          });
+          if (error) {
+            avisar(await mensagemDoErro(error, "Não consegui alterar o acesso."), false);
+            return;
+          }
+          avisar(data.ativo ? "Acesso reativado." : "Acesso bloqueado.");
+          await carregarMembros();
+        } finally {
+          botao.disabled = false;
+        }
+      }
+
       campoBusca.addEventListener("input", render);
       await carregar();
       await carregarCategorias();
+      await carregarMembros();
     </script>
   </body>
 </html>

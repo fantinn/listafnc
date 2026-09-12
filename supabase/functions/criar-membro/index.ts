@@ -17,12 +17,12 @@
  * Publicar: supabase functions deploy criar-membro
  */
 
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { clienteServico, confirmarAdmin } from "../_shared/admin.ts";
 import { conferirSenha, montarSenha, sortearSufixo } from "../_shared/senha.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, content-type",
+  "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, apikey",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -42,24 +42,10 @@ Deno.serve(async (req) => {
   const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
   if (!token) return json({ erro: "não autorizado" }, 401);
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  const supabase = clienteServico();
 
-  const { data: { user }, error: erroUsuario } = await supabase.auth.getUser(token);
-  if (erroUsuario || !user) return json({ erro: "não autorizado" }, 401);
-
-  const { data: quemChama } = await supabase
-    .from("membros")
-    .select("admin, ativo")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  // Admin desativado tambem perde o direito: desativar a conta precisa
-  // tirar todos os poderes, nao so a leitura da lista.
-  if (!quemChama?.admin || !quemChama.ativo) return json({ erro: "não autorizado" }, 403);
+  const user = await confirmarAdmin(supabase, token);
+  if (!user) return json({ erro: "não autorizado" }, 403);
 
   let corpo: { email?: string };
   try {

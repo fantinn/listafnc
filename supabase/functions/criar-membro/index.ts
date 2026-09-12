@@ -18,7 +18,7 @@
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { montarSenha, sortearSufixo } from "../_shared/senha.ts";
+import { conferirSenha, montarSenha, sortearSufixo } from "../_shared/senha.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -89,6 +89,15 @@ Deno.serve(async (req) => {
 
   const sufixo = sortearSufixo();
   const senha = montarSenha(email, sufixo);
+
+  // A senha gerada tem de passar nas mesmas regras que exigimos do
+  // comprador. Se um dia deixar de passar, e melhor descobrir aqui do que
+  // o comprador descobrir na hora de trocar por uma igual.
+  const problema = conferirSenha(senha);
+  if (problema) {
+    console.error("senha gerada nao passa nas proprias regras:", problema);
+    return json({ erro: FALE_COM_SUPORTE }, 500);
+  }
 
   const { data: criado, error: erroAuth } = await supabase.auth.admin.createUser({
     email,

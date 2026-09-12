@@ -110,7 +110,13 @@ if (existente) {
     process.exit(0);
   }
   const rotulo = existente.admin ? "Ja cadastrado (admin)." : "Ja cadastrado.";
-  console.log(`\n${rotulo}\n  E-mail: ${email}\n  Senha:  ${montarSenha(email, existente.sufixo)}\n`);
+  // sufixo "propria" = a pessoa escolheu a senha dela em ativar.html, e nao
+  // da para remontar (so guardamos o hash). Imprimir montarSenha() aqui
+  // ditaria ao suporte uma senha que nao funciona.
+  const senha = existente.sufixo === "propria"
+    ? "definida pelo proprio comprador - nao da para recuperar. Ele mesmo troca em listafnc.com.br/ativar.html"
+    : montarSenha(email, existente.sufixo);
+  console.log(`\n${rotulo}\n  E-mail: ${email}\n  Senha:  ${senha}\n`);
   process.exit(0);
 }
 

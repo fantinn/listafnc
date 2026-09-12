@@ -1,10 +1,15 @@
 /**
  * Ativa o acesso de quem comprou.
  *
- * O comprador cai aqui vindo da pagina de obrigado da PerfectPay (ou volta
- * depois, se perdeu o acesso), informa e-mail e CPF da compra, e a conta e
- * criada na hora. A senha aparece na tela - nao dependemos de e-mail, que
- * e o maior gerador de suporte nesse tipo de entrega.
+ * O comprador cai aqui vindo da pagina de obrigado da PerfectPay, informa
+ * e-mail e CPF da compra e ESCOLHE a propria senha. Antes ela era gerada e
+ * mostrada uma unica vez: quem fechasse a aba perdia o acesso para sempre,
+ * porque so guardamos o hash. Senha escolhida e senha que a pessoa lembra -
+ * ou que o gerenciador dela guarda sozinho.
+ *
+ * A mesma porta serve para quem ja tem conta e esqueceu a senha: com o
+ * mesmo e-mail e CPF da compra, define outra. A prova e a mesma que
+ * autorizou criar a conta, entao isso nao abre porta nova.
  *
  * verify_jwt desligado de proposito: quem chama ainda nao tem conta. O que
  * autoriza e existir uma compra aprovada, gravada pelo postback, com o
@@ -15,7 +20,12 @@
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { montarSenha, sortearSufixo } from "../_shared/senha.ts";
+import { conferirSenha } from "../_shared/senha.ts";
+
+// O comprador escolhe a propria senha, entao nao ha sufixo para guardar.
+// A coluna e NOT NULL, e esta marca deixa claro para quem for olhar a linha
+// (ou para o admin/criar-membro.mjs) que aqui nao da para remontar senha.
+const SEM_SUFIXO = "propria";
 
 const APROVADO = 2;
 const LIMITE_TENTATIVAS = 4;
@@ -54,23 +64,24 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ erro: "método não permitido" }, 405);
 
-  let corpo: { email?: string; cpf?: string; redefinir?: boolean };
+  let corpo: { email?: string; cpf?: string; senha?: string };
   try {
     corpo = await req.json();
   } catch {
     return json({ erro: "corpo inválido" }, 400);
   }
 
-  // Redefinir e um pedido explicito do comprador ("perdi minha senha"), nunca
-  // automatico: quem so voltou aqui para conferir nao pode perder, sem querer,
-  // a senha que ja estava funcionando.
-  const querRedefinir = corpo.redefinir === true;
-
   const email = String(corpo.email ?? "").trim().toLowerCase();
   const cpfHash = await hashCpf(String(corpo.cpf ?? ""));
+  const senha = String(corpo.senha ?? "");
 
   if (!email.includes("@")) return json({ erro: "Informe um e-mail válido." }, 400);
   if (!cpfHash) return json({ erro: "Informe o CPF com 11 dígitos." }, 400);
+
+  // Conferida antes de qualquer consulta: nao ha motivo para ir ao banco
+  // (nem gastar tentativa do limitador) se a senha nem serve.
+  const problemaSenha = conferirSenha(senha);
+  if (problemaSenha) return json({ erro: problemaSenha }, 400);
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -170,65 +181,42 @@ Deno.serve(async (req) => {
 
     // Conta de admin nunca troca de senha por aqui. Esta porta se abre com
     // e-mail + CPF, dados que circulam; o painel inteiro nao pode depender
-    // disso. A recusa usa mensagem generica, igual a de uma falha qualquer,
-    // e a resposta de quem so consultou e identica a de um comprador comum:
+    // disso. A recusa usa mensagem generica, igual a de uma falha qualquer:
     // nada no retorno conta que aquele e-mail e de um administrador.
-    if (membro.admin && querRedefinir) {
+    if (membro.admin) {
       return await recusar(
-        json({ erro: "Não foi possível gerar uma senha nova. Fale com o suporte." }, 403),
+        json({ erro: "Não foi possível definir a senha dessa conta. Fale com o suporte." }, 403),
       );
     }
 
-    if (!querRedefinir) {
-      await registrar(true);
-      return json({
-        ja_existia: true,
-        email,
-        mensagem:
-          "Sua conta já está ativa. Entre com o e-mail e a senha que você recebeu na ativação.",
-      });
-    }
-
-    // 2b. Senha perdida: gera outra. A antiga deixa de valer na hora - e o
-    // mesmo e-mail e CPF da compra que ja autorizaram criar a conta.
-    const sufixoNovo = sortearSufixo();
-    const senhaNova = montarSenha(email, sufixoNovo);
-
+    // Conta que ja existe: o comprador esta trocando a senha. E o mesmo
+    // e-mail e CPF da compra que autorizaram cria-la, entao a prova e a
+    // mesma - e assim quem perdeu a senha se resolve sozinho.
     const { error: erroSenha } = await supabase.auth.admin.updateUserById(membro.id, {
-      password: senhaNova,
+      password: senha,
     });
     if (erroSenha) {
-      console.error("falha ao redefinir senha:", erroSenha.message);
+      console.error("falha ao definir senha:", erroSenha.message);
       return await recusar(json({ erro: FALE_COM_SUPORTE }, 500));
     }
 
-    // Guarda o sufixo novo: sem isso a linha em `membros` continuaria
-    // descrevendo a senha antiga. Isso importa porque admin/criar-membro.mjs
-    // remonta a senha a partir desse campo para o suporte ditar ao comprador.
     const { error: erroSufixo } = await supabase
       .from("membros")
-      .update({ sufixo: sufixoNovo })
+      .update({ sufixo: SEM_SUFIXO })
       .eq("id", membro.id);
 
-    // Falhou aqui: a senha nova JA vale, entao devolver erro deixaria o
-    // comprador trancado do lado de fora sem nunca ver a credencial. Melhor
-    // entregar a senha e gritar no log, que e o suficiente para consertar a
-    // linha na mao depois.
+    // A senha nova JA vale neste ponto. Falhar aqui so deixa a marca do
+    // sufixo desatualizada, o que nao tranca ninguem - entao registra no
+    // log e segue, em vez de devolver erro para quem ja trocou a senha.
     if (erroSufixo) {
-      console.error(
-        "senha redefinida mas sufixo nao gravado para", email,
-        "- membros.sufixo esta desatualizado:", erroSufixo.message,
-      );
+      console.error("senha trocada mas sufixo nao marcado para", email, "-", erroSufixo.message);
     }
 
     await registrar(true);
-    return json({ redefinida: true, email, senha: senhaNova });
+    return json({ trocada: true, email });
   }
 
-  // 3. Cria a conta.
-  const sufixo = sortearSufixo();
-  const senha = montarSenha(email, sufixo);
-
+  // 3. Cria a conta com a senha que o comprador escolheu.
   const { data: criado, error: erroAuth } = await supabase.auth.admin.createUser({
     email,
     password: senha,
@@ -242,7 +230,7 @@ Deno.serve(async (req) => {
 
   const { error: erroMembro } = await supabase
     .from("membros")
-    .insert({ id: criado.user.id, email, sufixo, admin: false, ativo: true });
+    .insert({ id: criado.user.id, email, sufixo: SEM_SUFIXO, admin: false, ativo: true });
 
   if (erroMembro) {
     // Sem a linha em membros o acesso nao funciona, entao nao vale deixar a
@@ -253,5 +241,5 @@ Deno.serve(async (req) => {
   }
 
   await registrar(true);
-  return json({ ja_existia: false, email, senha });
+  return json({ criada: true, email });
 });

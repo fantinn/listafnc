@@ -80,6 +80,25 @@
         font-size: 0.8rem; line-height: 1.45;
       }
       .aviso.visivel { display: flex; }
+
+      /* Olho de mostrar a senha: senha escolhida com erro de digitacao e
+         pior que senha gerada - a pessoa sai achando que sabe qual e. */
+      .entrada { position: relative; }
+      .olho {
+        position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+        background: none; border: none; cursor: pointer; padding: 8px 10px;
+        color: rgba(232,240,255,0.4); font-size: 0.9rem;
+      }
+      .olho:hover { color: var(--light); }
+      .entrada:has(.olho) input { padding-right: 42px; }
+
+      .regras { list-style: none; margin-top: 9px; display: grid; gap: 4px; }
+      .regras li {
+        display: flex; align-items: center; gap: 7px;
+        font-size: 0.73rem; color: rgba(232,240,255,0.38);
+      }
+      .regras li i { font-size: 0.7rem; width: 12px; }
+      .regras li.ok { color: #86efac; }
       .aviso.erro {
         background: rgba(248,113,113,0.1);
         border: 1px solid rgba(248,113,113,0.3); color: #fca5a5;
@@ -122,14 +141,6 @@
       }
       .copiar:hover { background: rgba(255,255,255,0.12); color: #fff; }
 
-      .guarde {
-        display: flex; align-items: flex-start; gap: 10px;
-        text-align: left; padding: 12px 14px; border-radius: 10px; margin-bottom: 18px;
-        background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
-        font-size: 0.78rem; line-height: 1.5; color: rgba(253,230,138,0.95);
-      }
-      .guarde i { margin-top: 2px; flex-shrink: 0; }
-
       .ajuda {
         margin-top: 26px; padding-top: 22px;
         border-top: 1px solid rgba(255,255,255,0.08);
@@ -149,8 +160,8 @@
       <div id="etapaFormulario">
         <h1>Liberar meu acesso</h1>
         <p class="subtitle">
-          Informe o e-mail e o CPF que você usou na compra. O acesso é criado na hora,
-          e a senha aparece aqui mesmo nesta tela.
+          Informe o e-mail e o CPF que você usou na compra e escolha a sua senha.
+          O acesso é criado na hora.
         </p>
 
         <div class="aviso erro" id="aviso">
@@ -176,6 +187,32 @@
             <p class="dica">Só para confirmar que é você. Não guardamos o número.</p>
           </div>
 
+          <div class="field">
+            <label for="senha">Crie sua senha</label>
+            <div class="entrada">
+              <i class="fa-solid fa-lock"></i>
+              <input type="password" id="senha" name="senha" autocomplete="new-password" placeholder="Escolha uma senha" required />
+              <button type="button" class="olho" id="verSenha" aria-label="Mostrar ou esconder a senha">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <ul class="regras" id="regras">
+              <li data-regra="tamanho"><i class="fa-regular fa-circle"></i> Pelo menos 8 caracteres</li>
+              <li data-regra="letra"><i class="fa-regular fa-circle"></i> Uma letra</li>
+              <li data-regra="numero"><i class="fa-regular fa-circle"></i> Um número</li>
+              <li data-regra="especial"><i class="fa-regular fa-circle"></i> Um caractere especial (! @ # $ -)</li>
+            </ul>
+          </div>
+
+          <div class="field">
+            <label for="senha2">Repita a senha</label>
+            <div class="entrada">
+              <i class="fa-solid fa-lock"></i>
+              <input type="password" id="senha2" name="senha2" autocomplete="new-password" placeholder="Digite de novo" required />
+            </div>
+            <p class="dica" id="dicaSenha2"></p>
+          </div>
+
           <button type="submit" class="btn-blue" id="botao">
             <i class="fa-solid fa-unlock"></i> Liberar acesso
           </button>
@@ -188,47 +225,20 @@
         </div>
       </div>
 
-      <!-- Etapa 2: credenciais -->
+      <!-- Etapa 2: pronto -->
       <div id="etapaPronto" class="pronto" hidden>
         <span class="selo"><i class="fa-solid fa-circle-check"></i> Acesso liberado</span>
-        <h1 id="tituloPronto">Guarde seus dados</h1>
+        <h1 id="tituloPronto">Tudo pronto</h1>
         <p class="subtitle" id="textoPronto">
-          Estes são os dados de entrada da sua área de membros.
+          Sua conta está ativa. Entre com o seu e-mail e a senha que você acabou de criar.
         </p>
-
-        <!-- Aviso proprio desta etapa: o da etapa 1 fica escondido junto
-             com o formulario, e uma falha ao gerar senha nova precisa
-             aparecer aqui. -->
-        <div class="aviso erro" id="avisoPronto">
-          <i class="fa-solid fa-triangle-exclamation" style="margin-top:2px;"></i>
-          <span id="avisoProntoTexto"></span>
-        </div>
-
-        <div class="guarde">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <span>
-            <strong>Anote a senha agora.</strong> Por segurança ela não é enviada por
-            e-mail e não aparece de novo depois que você sair desta página.
-          </span>
-        </div>
 
         <div class="credenciais">
           <div class="credencial">
             <span>E-mail</span>
             <strong id="mostraEmail"></strong>
           </div>
-          <div class="credencial">
-            <span>Senha</span>
-            <strong id="mostraSenha"></strong>
-            <button class="copiar" id="copiar" type="button">
-              <i class="fa-regular fa-copy"></i> Copiar senha
-            </button>
-          </div>
         </div>
-
-        <button type="button" class="btn-ghost" id="redefinir" hidden style="width:100%;margin-bottom:10px;">
-          <i class="fa-solid fa-rotate"></i> Perdi minha senha — gerar outra
-        </button>
 
         <a class="btn-blue" href="login.html" style="width:100%;">
           <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar na minha lista
@@ -272,38 +282,53 @@
         botao.innerHTML = '<i class="fa-solid fa-unlock"></i> Liberar acesso';
       }
 
-      const btRedefinir = document.getElementById("redefinir");
-      const blocoSenha = document.getElementById("mostraSenha").closest(".credencial");
+      const campoSenha = document.getElementById("senha");
+      const campoSenha2 = document.getElementById("senha2");
+      const dicaSenha2 = document.getElementById("dicaSenha2");
 
-      // Guardados para o botão de redefinir poder repetir a chamada: é o
-      // mesmo e-mail e CPF que já foram conferidos agora há pouco.
-      let emailConferido = "";
-      let cpfConferido = "";
+      // Mesmas regras da função `ativar`. Aqui é só para a pessoa ver o que
+      // falta enquanto digita - quem de fato recusa é o servidor.
+      const REGRAS = {
+        tamanho: (s) => s.length >= 8,
+        letra: (s) => /[a-zA-Z]/.test(s),
+        numero: (s) => /[0-9]/.test(s),
+        especial: (s) => /[^a-zA-Z0-9]/.test(s),
+      };
 
-      async function chamarAtivar(corpo) {
-        const resposta = await fetch(SUPABASE_URL + "/functions/v1/ativar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(corpo),
-        });
-        return { resposta, dados: await resposta.json() };
-      }
-
-      function mostrarSenha(senha) {
-        document.querySelector(".guarde").hidden = false;
-        blocoSenha.hidden = false;
-        document.getElementById("mostraSenha").textContent = senha;
-      }
-
-      document.getElementById("copiar").addEventListener("click", async () => {
-        const alvo = document.getElementById("copiar");
-        try {
-          await navigator.clipboard.writeText(document.getElementById("mostraSenha").textContent);
-          alvo.innerHTML = '<i class="fa-solid fa-check"></i> Senha copiada';
-        } catch {
-          // Sem permissão de área de transferência: a senha está na tela.
-          alvo.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Copie da tela';
+      function conferirRegras() {
+        const s = campoSenha.value;
+        let todasOk = true;
+        for (const [nome, testar] of Object.entries(REGRAS)) {
+          const ok = testar(s);
+          todasOk = todasOk && ok;
+          const li = document.querySelector(`[data-regra="${nome}"]`);
+          li.classList.toggle("ok", ok);
+          li.querySelector("i").className = ok
+            ? "fa-solid fa-circle-check"
+            : "fa-regular fa-circle";
         }
+        return todasOk;
+      }
+
+      function conferirIguais() {
+        const iguais = campoSenha.value === campoSenha2.value;
+        dicaSenha2.textContent = iguais ? "" : "As duas senhas estão diferentes.";
+        dicaSenha2.style.color = iguais ? "" : "#fca5a5";
+        return iguais;
+      }
+
+      campoSenha.addEventListener("input", () => {
+        conferirRegras();
+        if (campoSenha2.value) conferirIguais();
+      });
+      campoSenha2.addEventListener("input", conferirIguais);
+
+      document.getElementById("verSenha").addEventListener("click", () => {
+        const mostrando = campoSenha.type === "text";
+        campoSenha.type = campoSenha2.type = mostrando ? "password" : "text";
+        document.getElementById("verSenha").innerHTML = mostrando
+          ? '<i class="fa-regular fa-eye"></i>'
+          : '<i class="fa-regular fa-eye-slash"></i>';
       });
 
       form.addEventListener("submit", async (evento) => {
@@ -312,16 +337,24 @@
 
         const email = document.getElementById("email").value.trim().toLowerCase();
         const cpf = campoCpf.value.replace(/\D/g, "");
+        const senha = campoSenha.value;
 
         if (!email.includes("@")) return mostrarErro("Informe o e-mail que você usou na compra.");
         if (cpf.length !== 11) return mostrarErro("Informe o CPF completo, com 11 dígitos.");
+        if (!conferirRegras()) return mostrarErro("A senha ainda não atende a todos os requisitos.");
+        if (!conferirIguais()) return mostrarErro("As duas senhas precisam ser iguais.");
 
         botao.disabled = true;
         botao.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Verificando sua compra...';
 
         let resposta, dados;
         try {
-          ({ resposta, dados } = await chamarAtivar({ email, cpf }));
+          resposta = await fetch(SUPABASE_URL + "/functions/v1/ativar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, cpf, senha }),
+          });
+          dados = await resposta.json();
         } catch {
           mostrarErro("Não conseguimos falar com o servidor. Tente de novo em instantes.");
           restaurarBotao();
@@ -334,68 +367,21 @@
           return;
         }
 
-        emailConferido = email;
-        cpfConferido = cpf;
+        // Tira a senha dos campos assim que ela cumpriu o papel: não custa
+        // nada e evita deixá-la escrita na página.
+        campoSenha.value = campoSenha2.value = "";
 
         document.getElementById("etapaFormulario").hidden = true;
         document.getElementById("etapaPronto").hidden = false;
         document.getElementById("mostraEmail").textContent = dados.email;
 
-        // Conta que já existia não tem senha para mostrar: a senha original
-        // não fica guardada em lugar nenhum, só o hash. Por isso o caminho
-        // de quem perdeu a senha é gerar outra, não recuperar a antiga.
-        if (dados.ja_existia) {
-          document.getElementById("tituloPronto").textContent = "Sua conta já está ativa";
+        // `trocada` = a conta já existia e o comprador acabou de definir
+        // outra senha (o caminho de quem esqueceu a anterior).
+        if (dados.trocada) {
+          document.getElementById("tituloPronto").textContent = "Senha atualizada";
           document.getElementById("textoPronto").textContent =
-            "Entre com a senha que você recebeu quando ativou.";
-          document.querySelector(".guarde").hidden = true;
-          blocoSenha.hidden = true;
-          // Oferecido para todo mundo: a resposta não diz se a conta é de
-          // admin, justamente para não entregar isso. Conta de admin é
-          // recusada pelo servidor na hora de gerar.
-          btRedefinir.hidden = false;
-        } else {
-          mostrarSenha(dados.senha);
+            "Sua conta já existia e passou a usar a senha que você acabou de criar. A anterior não vale mais.";
         }
-      });
-
-      btRedefinir.addEventListener("click", async () => {
-        if (!confirm("Gerar uma senha nova?\n\nA senha antiga para de funcionar na hora.")) return;
-
-        const avisoPronto = document.getElementById("avisoPronto");
-        const falhar = (mensagem) => {
-          document.getElementById("avisoProntoTexto").textContent = mensagem;
-          avisoPronto.classList.add("visivel");
-          btRedefinir.disabled = false;
-          btRedefinir.innerHTML = '<i class="fa-solid fa-rotate"></i> Perdi minha senha — gerar outra';
-        };
-
-        avisoPronto.classList.remove("visivel");
-        btRedefinir.disabled = true;
-        btRedefinir.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Gerando...';
-
-        let resposta, dados;
-        try {
-          ({ resposta, dados } = await chamarAtivar({
-            email: emailConferido,
-            cpf: cpfConferido,
-            redefinir: true,
-          }));
-        } catch {
-          falhar("Não conseguimos falar com o servidor. Tente de novo em instantes.");
-          return;
-        }
-
-        if (!resposta.ok) {
-          falhar(dados?.erro ?? "Não foi possível gerar outra senha agora.");
-          return;
-        }
-
-        btRedefinir.hidden = true;
-        document.getElementById("tituloPronto").textContent = "Senha nova gerada";
-        document.getElementById("textoPronto").textContent =
-          "A senha anterior não vale mais. Anote esta agora.";
-        mostrarSenha(dados.senha);
       });
     </script>
   </body>

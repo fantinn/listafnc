@@ -1009,12 +1009,27 @@
         if (!m.admin) {
           const botoes = document.createElement("div");
           botoes.className = "botoes";
+
           const alternar = document.createElement("button");
           alternar.type = "button";
           alternar.title = m.ativo ? "Bloquear acesso" : "Reativar acesso";
           alternar.innerHTML = m.ativo ? '<i class="fa-solid fa-lock"></i>' : '<i class="fa-solid fa-lock-open"></i>';
           alternar.addEventListener("click", () => alternarMembro(m, alternar));
-          botoes.appendChild(alternar);
+
+          const redefinir = document.createElement("button");
+          redefinir.type = "button";
+          redefinir.title = "Redefinir senha";
+          redefinir.innerHTML = '<i class="fa-solid fa-key"></i>';
+          redefinir.addEventListener("click", () => redefinirSenhaMembro(m, redefinir));
+
+          const excluir = document.createElement("button");
+          excluir.type = "button";
+          excluir.className = "remover";
+          excluir.title = "Excluir acesso";
+          excluir.innerHTML = '<i class="fa-solid fa-trash"></i>';
+          excluir.addEventListener("click", () => excluirMembro(m, excluir));
+
+          botoes.append(alternar, redefinir, excluir);
           linha.appendChild(botoes);
         }
 
@@ -1037,6 +1052,49 @@
             return;
           }
           avisar(data.ativo ? "Acesso reativado." : "Acesso bloqueado.");
+          await carregarMembros();
+        } finally {
+          botao.disabled = false;
+        }
+      }
+
+      async function redefinirSenhaMembro(m, botao) {
+        if (!confirm(`Redefinir a senha de ${m.email}? A senha antiga para de funcionar na hora.`)) return;
+
+        botao.disabled = true;
+        try {
+          const { data, error } = await supabase.functions.invoke("gerenciar-membros", {
+            body: { acao: "redefinir-senha", email: m.email },
+          });
+          if (error) {
+            avisar(await mensagemDoErro(error, "Não consegui redefinir a senha."), false);
+            return;
+          }
+          // Mesmo painel de credencial usado na criacao: a senha nova
+          // tambem so aparece essa vez.
+          credEmail.textContent = data.email;
+          credSenha.textContent = data.senha;
+          credencial.hidden = false;
+          credencial.scrollIntoView({ behavior: "smooth", block: "center" });
+          avisar("Senha redefinida. Copie agora.");
+        } finally {
+          botao.disabled = false;
+        }
+      }
+
+      async function excluirMembro(m, botao) {
+        if (!confirm(`Excluir definitivamente o acesso de ${m.email}?\n\nNão tem como desfazer. Se for temporário, use bloquear em vez de excluir.`)) return;
+
+        botao.disabled = true;
+        try {
+          const { error } = await supabase.functions.invoke("gerenciar-membros", {
+            body: { acao: "excluir", email: m.email },
+          });
+          if (error) {
+            avisar(await mensagemDoErro(error, "Não consegui excluir o acesso."), false);
+            return;
+          }
+          avisar("Acesso excluído.");
           await carregarMembros();
         } finally {
           botao.disabled = false;

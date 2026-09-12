@@ -46,6 +46,30 @@ function igualSeguro(a: string, b: string) {
   return diferenca === 0;
 }
 
+/**
+ * Insiste numa escrita antes de desistir.
+ *
+ * Nao e precaucao teorica: em 12/09/2026 uma aprovacao real se perdeu aqui.
+ * O banco devolveu 504 na gravacao, a funcao respondeu 500, e a PerfectPay
+ * nao reenviou o postback. A venda ficou "pending" para sempre e o
+ * comprador nunca conseguiu liberar o acesso - dinheiro entrou, produto
+ * nao saiu, e nada avisou.
+ */
+async function insistir<T extends { error: { message: string } | null }>(
+  acao: () => PromiseLike<T>,
+  oque: string,
+  tentativas = 3,
+): Promise<T> {
+  let ultimo!: T;
+  for (let i = 0; i < tentativas; i++) {
+    ultimo = await acao();
+    if (!ultimo.error) return ultimo;
+    console.warn(`${oque}: tentativa ${i + 1}/${tentativas} falhou -`, ultimo.error.message);
+    if (i < tentativas - 1) await new Promise((r) => setTimeout(r, 600 * (i + 1)));
+  }
+  return ultimo;
+}
+
 async function hashCpf(bruto: string) {
   const digitos = (bruto ?? "").replace(/[^0-9]/g, "");
   if (digitos.length !== 11) return null;
@@ -113,25 +137,33 @@ Deno.serve(async (req) => {
 
   // onConflict no codigo da venda: a PerfectPay reenvia o mesmo postback a
   // cada mudanca de status, e nao pode virar linha nova toda vez.
-  const { error } = codigo
-    ? await supabase.from("compras").upsert(registro, { onConflict: "codigo_venda" })
-    : await supabase.from("compras").insert(registro);
+  const gravar = () =>
+    codigo
+      ? supabase.from("compras").upsert(registro, { onConflict: "codigo_venda" })
+      : supabase.from("compras").insert(registro);
+
+  const { error } = await insistir(gravar, "gravar compra");
 
   if (error) {
     console.error("falha ao gravar compra:", error.message);
     return json({ erro: "falha ao gravar" }, 500);
   }
 
-  // Reembolso/chargeback tira o acesso de quem ja ativou.
+  // Reembolso/chargeback tira o acesso de quem ja ativou. Tambem insiste:
+  // perder uma revogacao e pior que perder uma aprovacao - quem pediu
+  // reembolso continuaria com a lista.
   if (REVOGA.has(status)) {
-    const { error: erroRevoga } = await supabase
-      .from("membros")
-      .update({
-        ativo: false,
-        desativado_em: new Date().toISOString(),
-        motivo_desativacao: `postback status ${status}`,
-      })
-      .eq("email", email);
+    const revogar = () =>
+      supabase
+        .from("membros")
+        .update({
+          ativo: false,
+          desativado_em: new Date().toISOString(),
+          motivo_desativacao: `postback status ${status}`,
+        })
+        .eq("email", email);
+
+    const { error: erroRevoga } = await insistir(revogar, "revogar acesso");
     if (erroRevoga) console.error("falha ao revogar:", erroRevoga.message);
   }
 

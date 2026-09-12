@@ -16,6 +16,11 @@ on:
     # se o GitHub atrasar ou pular uma execucao (o agendamento e "quando der").
     - cron: "0 9 */3 * *"
   workflow_dispatch:
+    inputs:
+      simular_falha:
+        description: "Fingir que o Supabase caiu, para testar o alarme"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -32,7 +37,19 @@ jobs:
       # se ela for trocada um dia.
       - name: Checar o Supabase
         id: checar
+        env:
+          SIMULAR: ${{ inputs.simular_falha }}
         run: |
+          # Permite testar o alarme sem esperar uma queda de verdade - sem
+          # isso, so se descobre que o aviso esta quebrado no dia em que ele
+          # precisava ter funcionado.
+          if [ "$SIMULAR" = "true" ]; then
+            echo "SIMULACAO: fingindo que o Supabase caiu."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "codigo=simulado" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           # sed em vez de grep -P: PCRE depende do locale do runner, sed nao.
           url=$(sed -n 's/.*SUPABASE_URL = "\([^"]*\)".*/\1/p' supabase-config.js)
           chave=$(sed -n 's/.*SUPABASE_PUBLISHABLE_KEY = "\([^"]*\)".*/\1/p' supabase-config.js)

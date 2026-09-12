@@ -166,6 +166,42 @@
       .estado i { font-size: 1.6rem; color: var(--blue); }
       .estado.erro i { color: #f87171; }
 
+      .abas {
+        display: flex; gap: 4px; margin-bottom: 22px;
+        border-bottom: 1px solid rgba(255,255,255,0.09);
+      }
+      .aba {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 12px 16px; margin-bottom: -1px; cursor: pointer;
+        background: none; border: none; border-bottom: 2px solid transparent;
+        color: rgba(232,240,255,0.5);
+        font-family: "Inter", sans-serif; font-size: 0.85rem; font-weight: 600;
+      }
+      .aba:hover { color: var(--light); }
+      .aba.ativa { color: var(--light); border-bottom-color: var(--blue); }
+
+      .nota-acesso { margin-top: 12px; font-size: 0.76rem; line-height: 1.5; color: rgba(232,240,255,0.45); }
+
+      /* Verde do painel de credencial: e a confirmacao de que deu certo, e
+         precisa se distinguir dos paineis normais na hora de copiar. */
+      .credencial { border-color: rgba(74,222,128,0.3); }
+      .credencial .par {
+        display: flex; align-items: baseline; gap: 12px;
+        padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.07);
+      }
+      .credencial .par:last-of-type { border-bottom: none; }
+      .credencial .par span {
+        flex-shrink: 0; width: 62px;
+        font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase;
+        color: rgba(232,240,255,0.45);
+      }
+      /* user-select:all - um clique ja seleciona a senha inteira, para quem
+         preferir copiar na mao em vez de usar o botao. */
+      .credencial .par strong {
+        font-family: "Space Grotesk", sans-serif; font-size: 1rem;
+        color: var(--light); user-select: all; word-break: break-all;
+      }
+
       /* Sem isto o cabecalho quebra palavra no meio em telas estreitas
          ("ADMI N", "SA IR"). */
       .topo .btn-ghost, .selo { white-space: nowrap; }
@@ -194,51 +230,90 @@
       </div>
 
       <div id="painelAdmin" hidden>
-        <h1>Editar lista de fornecedores</h1>
-        <p class="sub">Toda alteração aparece para os compradores no acesso seguinte. Não precisa publicar nada.</p>
+        <div class="abas" role="tablist">
+          <button class="aba ativa" type="button" id="abaFornecedores" role="tab" aria-selected="true" aria-controls="paneFornecedores">
+            <i class="fa-solid fa-list" aria-hidden="true"></i> Fornecedores
+          </button>
+          <button class="aba" type="button" id="abaAcessos" role="tab" aria-selected="false" aria-controls="paneAcessos">
+            <i class="fa-solid fa-key" aria-hidden="true"></i> Acessos
+          </button>
+        </div>
 
         <div class="recado" id="recado"><i id="recadoIcone"></i><span id="recadoTexto"></span></div>
 
-        <form class="painel" id="form">
-          <h2 id="tituloForm">Novo fornecedor</h2>
-          <div class="campos">
-            <div class="campo">
-              <label for="nome">Nome *</label>
-              <input id="nome" required placeholder="Distribuidora Exemplo" />
-            </div>
-            <div class="campo">
-              <label for="categoria">Categoria</label>
-              <input id="categoria" list="categorias" placeholder="Calçados" />
-              <datalist id="categorias"></datalist>
-            </div>
-            <div class="campo">
-              <label for="telefone">WhatsApp</label>
-              <input id="telefone" placeholder="27 99999-9999" />
-            </div>
-            <div class="campo">
-              <label for="instagram">Instagram <span class="opcional">(opcional)</span></label>
-              <input id="instagram" placeholder="@perfil" />
-            </div>
-          </div>
-          <div class="barra-form">
-            <button type="submit" class="btn-blue" id="salvar"><i class="fa-solid fa-check"></i> Adicionar</button>
-            <button type="button" class="btn-ghost" id="cancelar" hidden>Cancelar edição</button>
-          </div>
-        </form>
+        <div id="paneFornecedores" role="tabpanel" aria-labelledby="abaFornecedores">
+          <h1>Editar lista de fornecedores</h1>
+          <p class="sub">Toda alteração aparece para os compradores no acesso seguinte. Não precisa publicar nada.</p>
 
-        <div class="painel">
-          <h2>Categorias</h2>
-          <p class="sub" style="margin-bottom:14px;">Arraste para mudar a ordem em que aparecem para o comprador. Clique no nome para renomear — o fornecedor continua na mesma categoria. Contatos Bônus fica sempre por último.</p>
-          <div id="listaCategorias"></div>
+          <form class="painel" id="form">
+            <h2 id="tituloForm">Novo fornecedor</h2>
+            <div class="campos">
+              <div class="campo">
+                <label for="nome">Nome *</label>
+                <input id="nome" required placeholder="Distribuidora Exemplo" />
+              </div>
+              <div class="campo">
+                <label for="categoria">Categoria</label>
+                <input id="categoria" list="categorias" placeholder="Calçados" />
+                <datalist id="categorias"></datalist>
+              </div>
+              <div class="campo">
+                <label for="telefone">WhatsApp</label>
+                <input id="telefone" placeholder="27 99999-9999" />
+              </div>
+              <div class="campo">
+                <label for="instagram">Instagram <span class="opcional">(opcional)</span></label>
+                <input id="instagram" placeholder="@perfil" />
+              </div>
+            </div>
+            <div class="barra-form">
+              <button type="submit" class="btn-blue" id="salvar"><i class="fa-solid fa-check"></i> Adicionar</button>
+              <button type="button" class="btn-ghost" id="cancelar" hidden>Cancelar edição</button>
+            </div>
+          </form>
+
+          <div class="painel">
+            <h2>Categorias</h2>
+            <p class="sub" style="margin-bottom:14px;">Arraste para mudar a ordem em que aparecem para o comprador. Clique no nome para renomear — o fornecedor continua na mesma categoria. Contatos Bônus fica sempre por último.</p>
+            <div id="listaCategorias"></div>
+          </div>
+
+          <div class="painel">
+            <h2 id="tituloLista">Fornecedores</h2>
+            <div class="busca">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="search" id="busca" placeholder="Filtrar..." autocomplete="off" />
+            </div>
+            <div id="lista"></div>
+          </div>
         </div>
 
-        <div class="painel">
-          <h2 id="tituloLista">Fornecedores</h2>
-          <div class="busca">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="search" id="busca" placeholder="Filtrar..." autocomplete="off" />
+        <div id="paneAcessos" role="tabpanel" aria-labelledby="abaAcessos" hidden>
+          <h1>Criar acesso manualmente</h1>
+          <p class="sub">Para a venda que não passou pelo caminho normal: pagamento por fora, cortesia, ou comprador que errou o e-mail na compra e por isso não consegue se liberar sozinho.</p>
+
+          <form class="painel" id="formAcesso">
+            <h2>Novo acesso de comprador</h2>
+            <div class="campos">
+              <div class="campo largo">
+                <label for="emailAcesso">E-mail do comprador *</label>
+                <input id="emailAcesso" type="email" required placeholder="comprador@gmail.com" autocomplete="off" />
+              </div>
+            </div>
+            <div class="barra-form">
+              <button type="submit" class="btn-blue" id="criarAcesso"><i class="fa-solid fa-key"></i> Criar acesso</button>
+            </div>
+            <p class="nota-acesso">A senha aparece uma vez só, aqui na tela. Ela não fica guardada em lugar nenhum — se perder, o jeito é criar outro acesso. O acesso criado aqui é sempre de comprador.</p>
+          </form>
+
+          <div class="painel credencial" id="credencial" hidden>
+            <h2>Acesso criado — copie antes de sair</h2>
+            <div class="par"><span>E-mail</span><strong id="credEmail"></strong></div>
+            <div class="par"><span>Senha</span><strong id="credSenha"></strong></div>
+            <div class="barra-form">
+              <button type="button" class="btn-blue" id="copiarCred"><i class="fa-regular fa-copy"></i> Copiar mensagem pronta</button>
+            </div>
           </div>
-          <div id="lista"></div>
         </div>
       </div>
     </div>
@@ -749,6 +824,108 @@
         await carregar();
         renderCategorias();
       }
+
+      // --- Abas ---
+
+      const abas = [
+        { aba: document.getElementById("abaFornecedores"), pane: document.getElementById("paneFornecedores") },
+        { aba: document.getElementById("abaAcessos"), pane: document.getElementById("paneAcessos") },
+      ];
+
+      for (const { aba } of abas) {
+        aba.addEventListener("click", () => {
+          for (const outra of abas) {
+            const ativa = outra.aba === aba;
+            outra.aba.classList.toggle("ativa", ativa);
+            outra.aba.setAttribute("aria-selected", String(ativa));
+            outra.pane.hidden = !ativa;
+          }
+        });
+      }
+
+      // --- Criar acesso de comprador na mao ---
+
+      const formAcesso = document.getElementById("formAcesso");
+      const campoEmailAcesso = document.getElementById("emailAcesso");
+      const btCriarAcesso = document.getElementById("criarAcesso");
+      const credencial = document.getElementById("credencial");
+      const credEmail = document.getElementById("credEmail");
+      const credSenha = document.getElementById("credSenha");
+
+      formAcesso.addEventListener("submit", async (evento) => {
+        evento.preventDefault();
+        const email = campoEmailAcesso.value.trim().toLowerCase();
+        if (!email) return;
+
+        // A credencial anterior sai da tela antes de comecar: senao, se esta
+        // chamada falhar, a senha de outro comprador continua ali como se
+        // fosse a resposta desta.
+        credencial.hidden = true;
+        btCriarAcesso.disabled = true;
+        try {
+          // A funcao roda com service_role (o navegador nao pode criar conta)
+          // e confere do lado dela que quem chama e admin.
+          const { data, error } = await supabase.functions.invoke("criar-membro", {
+            body: { email },
+          });
+
+          if (error) {
+            // invoke() so entrega o status; a mensagem que escrevemos na
+            // funcao fica no corpo da resposta, que vem em error.context.
+            let mensagem = "Não consegui criar o acesso.";
+            try {
+              const corpo = await error.context?.json();
+              if (corpo?.erro) mensagem = corpo.erro;
+            } catch { /* sem corpo legivel: fica a mensagem generica */ }
+            avisar(mensagem, false);
+            return;
+          }
+
+          credEmail.textContent = data.email;
+          credSenha.textContent = data.senha;
+          credencial.hidden = false;
+          formAcesso.reset();
+          avisar("Acesso criado. Copie a senha agora.");
+        } finally {
+          btCriarAcesso.disabled = false;
+        }
+      });
+
+      async function copiar(texto) {
+        try {
+          await navigator.clipboard.writeText(texto);
+          return true;
+        } catch { /* API nova bloqueada: cai no jeito antigo abaixo */ }
+
+        // execCommand e obsoleto, mas continua sendo o unico caminho quando
+        // a API de clipboard esta barrada (permissao negada, http, navegador
+        // velho) - e aqui perder a senha copiada custa caro: ela nao volta.
+        const area = document.createElement("textarea");
+        area.value = texto;
+        area.setAttribute("readonly", "");
+        area.style.cssText = "position:fixed;top:-1000px;opacity:0;";
+        document.body.appendChild(area);
+        area.select();
+        let copiou = false;
+        try {
+          copiou = document.execCommand("copy");
+        } catch { copiou = false; }
+        area.remove();
+        return copiou;
+      }
+
+      document.getElementById("copiarCred").addEventListener("click", async () => {
+        const texto =
+          "Seu acesso à Lista Completa de Fornecedores\n\n" +
+          "Site: https://listafnc.com.br/login.html\n" +
+          `E-mail: ${credEmail.textContent}\n` +
+          `Senha: ${credSenha.textContent}`;
+        if (await copiar(texto)) {
+          avisar("Mensagem copiada. É só colar para o comprador.");
+        } else {
+          avisar("Não consegui copiar sozinho — clique no e-mail e na senha para selecionar e copie na mão.", false);
+        }
+      });
 
       campoBusca.addEventListener("input", render);
       await carregar();

@@ -15,13 +15,11 @@
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { montarSenha, sortearSufixo } from "../_shared/senha.ts";
 
 const APROVADO = 2;
 const LIMITE_TENTATIVAS = 10;
 const JANELA_MINUTOS = 15;
-
-// Sem i, l, 1, o, 0: some a duvida de leitura quando o comprador digita.
-const ALFABETO = "abcdefghjkmnpqrstuvwxyz23456789";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -34,24 +32,6 @@ function json(corpo: unknown, status = 200) {
     status,
     headers: { ...CORS, "Content-Type": "application/json" },
   });
-}
-
-function sortearSufixo(tamanho = 4) {
-  const bytes = new Uint8Array(tamanho);
-  crypto.getRandomValues(bytes);
-  let saida = "";
-  for (const b of bytes) saida += ALFABETO[b % ALFABETO.length];
-  return saida;
-}
-
-function montarSenha(email: string, sufixo: string) {
-  const base = email
-    .split("@")[0]
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-zA-Z0-9]/g, "")
-    .toLowerCase();
-  return `${base}fnc${sufixo}`;
 }
 
 async function hashCpf(bruto: string) {

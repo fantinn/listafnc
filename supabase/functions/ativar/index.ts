@@ -54,12 +54,17 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ erro: "método não permitido" }, 405);
 
-  let corpo: { email?: string; cpf?: string };
+  let corpo: { email?: string; cpf?: string; redefinir?: boolean };
   try {
     corpo = await req.json();
   } catch {
     return json({ erro: "corpo inválido" }, 400);
   }
+
+  // Redefinir e um pedido explicito do comprador ("perdi minha senha"), nunca
+  // automatico: quem so voltou aqui para conferir nao pode perder, sem querer,
+  // a senha que ja estava funcionando.
+  const querRedefinir = corpo.redefinir === true;
 
   const email = String(corpo.email ?? "").trim().toLowerCase();
   const cpfHash = await hashCpf(String(corpo.cpf ?? ""));
@@ -125,7 +130,7 @@ Deno.serve(async (req) => {
   // 2. Ja tem conta?
   const { data: membro } = await supabase
     .from("membros")
-    .select("id, ativo")
+    .select("id, ativo, admin")
     .eq("email", email)
     .maybeSingle();
 
@@ -140,12 +145,49 @@ Deno.serve(async (req) => {
         403,
       );
     }
-    return json({
-      ja_existia: true,
-      email,
-      mensagem:
-        "Sua conta já está ativa. Entre com o e-mail e a senha que você recebeu na ativação.",
+
+    // Conta de admin nunca troca de senha por aqui. Esta porta se abre com
+    // e-mail + CPF, dados que circulam; o painel inteiro nao pode depender
+    // disso. Mensagem generica de proposito: nao conta para quem esta
+    // tentando que aquele e-mail e de um administrador.
+    if (membro.admin) {
+      if (querRedefinir) {
+        return json(
+          { erro: "Não é possível redefinir a senha dessa conta por aqui. Fale com o suporte." },
+          403,
+        );
+      }
+      return json({ ja_existia: true, email, pode_redefinir: false });
+    }
+
+    if (!querRedefinir) {
+      return json({
+        ja_existia: true,
+        email,
+        pode_redefinir: true,
+        mensagem:
+          "Sua conta já está ativa. Entre com o e-mail e a senha que você recebeu na ativação.",
+      });
+    }
+
+    // 2b. Senha perdida: gera outra. A antiga deixa de valer na hora - e o
+    // mesmo e-mail e CPF da compra que ja autorizaram criar a conta.
+    const sufixoNovo = sortearSufixo();
+    const senhaNova = montarSenha(email, sufixoNovo);
+
+    const { error: erroSenha } = await supabase.auth.admin.updateUserById(membro.id, {
+      password: senhaNova,
     });
+    if (erroSenha) {
+      console.error("falha ao redefinir senha:", erroSenha.message);
+      return json({ erro: FALE_COM_SUPORTE }, 500);
+    }
+
+    // Guarda o sufixo novo: sem isso a linha em `membros` continuaria
+    // descrevendo a senha antiga, que nao vale mais.
+    await supabase.from("membros").update({ sufixo: sufixoNovo }).eq("id", membro.id);
+
+    return json({ redefinida: true, email, senha: senhaNova });
   }
 
   // 3. Cria a conta.

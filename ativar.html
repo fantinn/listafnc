@@ -196,6 +196,14 @@
           Estes são os dados de entrada da sua área de membros.
         </p>
 
+        <!-- Aviso proprio desta etapa: o da etapa 1 fica escondido junto
+             com o formulario, e uma falha ao gerar senha nova precisa
+             aparecer aqui. -->
+        <div class="aviso erro" id="avisoPronto">
+          <i class="fa-solid fa-triangle-exclamation" style="margin-top:2px;"></i>
+          <span id="avisoProntoTexto"></span>
+        </div>
+
         <div class="guarde">
           <i class="fa-solid fa-triangle-exclamation"></i>
           <span>
@@ -217,6 +225,10 @@
             </button>
           </div>
         </div>
+
+        <button type="button" class="btn-ghost" id="redefinir" hidden style="width:100%;margin-bottom:10px;">
+          <i class="fa-solid fa-rotate"></i> Perdi minha senha — gerar outra
+        </button>
 
         <a class="btn-blue" href="login.html" style="width:100%;">
           <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar na minha lista
@@ -260,6 +272,40 @@
         botao.innerHTML = '<i class="fa-solid fa-unlock"></i> Liberar acesso';
       }
 
+      const btRedefinir = document.getElementById("redefinir");
+      const blocoSenha = document.getElementById("mostraSenha").closest(".credencial");
+
+      // Guardados para o botão de redefinir poder repetir a chamada: é o
+      // mesmo e-mail e CPF que já foram conferidos agora há pouco.
+      let emailConferido = "";
+      let cpfConferido = "";
+
+      async function chamarAtivar(corpo) {
+        const resposta = await fetch(SUPABASE_URL + "/functions/v1/ativar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(corpo),
+        });
+        return { resposta, dados: await resposta.json() };
+      }
+
+      function mostrarSenha(senha) {
+        document.querySelector(".guarde").hidden = false;
+        blocoSenha.hidden = false;
+        document.getElementById("mostraSenha").textContent = senha;
+      }
+
+      document.getElementById("copiar").addEventListener("click", async () => {
+        const alvo = document.getElementById("copiar");
+        try {
+          await navigator.clipboard.writeText(document.getElementById("mostraSenha").textContent);
+          alvo.innerHTML = '<i class="fa-solid fa-check"></i> Senha copiada';
+        } catch {
+          // Sem permissão de área de transferência: a senha está na tela.
+          alvo.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Copie da tela';
+        }
+      });
+
       form.addEventListener("submit", async (evento) => {
         evento.preventDefault();
         aviso.classList.remove("visivel");
@@ -275,12 +321,7 @@
 
         let resposta, dados;
         try {
-          resposta = await fetch(SUPABASE_URL + "/functions/v1/ativar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, cpf }),
-          });
-          dados = await resposta.json();
+          ({ resposta, dados } = await chamarAtivar({ email, cpf }));
         } catch {
           mostrarErro("Não conseguimos falar com o servidor. Tente de novo em instantes.");
           restaurarBotao();
@@ -293,33 +334,65 @@
           return;
         }
 
+        emailConferido = email;
+        cpfConferido = cpf;
+
         document.getElementById("etapaFormulario").hidden = true;
-        const pronto = document.getElementById("etapaPronto");
-        pronto.hidden = false;
+        document.getElementById("etapaPronto").hidden = false;
         document.getElementById("mostraEmail").textContent = dados.email;
 
         // Conta que já existia não tem senha para mostrar: a senha original
-        // não fica guardada em lugar nenhum, só o hash.
+        // não fica guardada em lugar nenhum, só o hash. Por isso o caminho
+        // de quem perdeu a senha é gerar outra, não recuperar a antiga.
         if (dados.ja_existia) {
           document.getElementById("tituloPronto").textContent = "Sua conta já está ativa";
           document.getElementById("textoPronto").textContent =
-            "Entre com a senha que você recebeu quando ativou. Se não tiver mais, fale com o suporte.";
+            "Entre com a senha que você recebeu quando ativou.";
           document.querySelector(".guarde").hidden = true;
-          document.getElementById("mostraSenha").closest(".credencial").hidden = true;
+          blocoSenha.hidden = true;
+          btRedefinir.hidden = dados.pode_redefinir === false;
         } else {
-          document.getElementById("mostraSenha").textContent = dados.senha;
-          document.getElementById("copiar").addEventListener("click", async () => {
-            try {
-              await navigator.clipboard.writeText(dados.senha);
-              document.getElementById("copiar").innerHTML =
-                '<i class="fa-solid fa-check"></i> Senha copiada';
-            } catch {
-              // Sem permissão de área de transferência: a senha está na tela.
-              document.getElementById("copiar").innerHTML =
-                '<i class="fa-solid fa-hand-pointer"></i> Copie da tela';
-            }
-          });
+          mostrarSenha(dados.senha);
         }
+      });
+
+      btRedefinir.addEventListener("click", async () => {
+        if (!confirm("Gerar uma senha nova?\n\nA senha antiga para de funcionar na hora.")) return;
+
+        const avisoPronto = document.getElementById("avisoPronto");
+        const falhar = (mensagem) => {
+          document.getElementById("avisoProntoTexto").textContent = mensagem;
+          avisoPronto.classList.add("visivel");
+          btRedefinir.disabled = false;
+          btRedefinir.innerHTML = '<i class="fa-solid fa-rotate"></i> Perdi minha senha — gerar outra';
+        };
+
+        avisoPronto.classList.remove("visivel");
+        btRedefinir.disabled = true;
+        btRedefinir.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Gerando...';
+
+        let resposta, dados;
+        try {
+          ({ resposta, dados } = await chamarAtivar({
+            email: emailConferido,
+            cpf: cpfConferido,
+            redefinir: true,
+          }));
+        } catch {
+          falhar("Não conseguimos falar com o servidor. Tente de novo em instantes.");
+          return;
+        }
+
+        if (!resposta.ok) {
+          falhar(dados?.erro ?? "Não foi possível gerar outra senha agora.");
+          return;
+        }
+
+        btRedefinir.hidden = true;
+        document.getElementById("tituloPronto").textContent = "Senha nova gerada";
+        document.getElementById("textoPronto").textContent =
+          "A senha anterior não vale mais. Anote esta agora.";
+        mostrarSenha(dados.senha);
       });
     </script>
   </body>

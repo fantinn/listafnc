@@ -350,7 +350,10 @@
             "Entre com a senha que você recebeu quando ativou.";
           document.querySelector(".guarde").hidden = true;
           blocoSenha.hidden = true;
-          btRedefinir.hidden = dados.pode_redefinir === false;
+          // Oferecido para todo mundo: a resposta não diz se a conta é de
+          // admin, justamente para não entregar isso. Conta de admin é
+          // recusada pelo servidor na hora de gerar.
+          btRedefinir.hidden = false;
         } else {
           mostrarSenha(dados.senha);
         }

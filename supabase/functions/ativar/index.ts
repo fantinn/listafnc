@@ -18,7 +18,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { montarSenha, sortearSufixo } from "../_shared/senha.ts";
 
 const APROVADO = 2;
-const LIMITE_TENTATIVAS = 10;
+const LIMITE_TENTATIVAS = 4;
 const JANELA_MINUTOS = 15;
 
 const CORS = {
@@ -96,8 +96,28 @@ Deno.serve(async (req) => {
     );
   }
 
-  const registrar = (sucesso: boolean) =>
+  const anotar = (sucesso: boolean) =>
     supabase.from("tentativas_ativacao").insert({ ip, email, sucesso });
+
+  // O cliente do Supabase nao lanca excecao em erro de banco: ele resolve
+  // com { error }. Um insert perdido aqui passava despercebido e sumia com
+  // a tentativa - ou seja, com o incremento do limitador logo acima.
+  const registrar = async (sucesso: boolean) => {
+    const { error } = await anotar(sucesso);
+    if (error) console.error("falha ao registrar tentativa:", error.message);
+    return !error;
+  };
+
+  // Toda recusa passa por aqui. Se a tentativa nao ficou registrada, o
+  // limitador nao enxergou o chute e ele sairia de graca - entao a resposta
+  // vira um erro neutro, que nao conta nada sobre o e-mail nem sobre o CPF.
+  const recusar = async (resposta: Response) => {
+    if (await registrar(false)) return resposta;
+    return json(
+      { erro: "Não consegui processar agora. Tente de novo em instantes." },
+      503,
+    );
+  };
 
   // 1. A compra existe, esta aprovada e o CPF confere?
   const { data: compras } = await supabase
@@ -109,22 +129,21 @@ Deno.serve(async (req) => {
   const compra = (compras ?? []).find((c) => c.cpf_hash === cpfHash);
 
   if (!compra) {
-    await registrar(false);
     // Compra existe mas sem CPF gravado: mapeamento do payload errado.
     // Vale avisar diferente, porque e problema nosso, nao do comprador.
     const semCpf = (compras ?? []).some((c) => !c.cpf_hash);
     if (semCpf) {
       console.error("compra aprovada sem cpf_hash para", email);
-      return json(
+      return await recusar(json(
         {
           erro:
             "Achamos sua compra, mas não conseguimos conferir o CPF. " +
             "Fale com o suporte que liberamos na hora.",
         },
         409,
-      );
+      ));
     }
-    return json({ erro: NAO_ENCONTRADO }, 404);
+    return await recusar(json({ erro: NAO_ENCONTRADO }, 404));
   }
 
   // 2. Ja tem conta?
@@ -135,36 +154,36 @@ Deno.serve(async (req) => {
     .maybeSingle();
 
   if (membro) {
-    await registrar(true);
+    // Cada saida daqui registra a sua propria tentativa. Marcar sucesso
+    // logo na entrada, como era antes, fazia toda recusa abaixo entrar no
+    // log como acerto - e, pior, ficar de fora do limitador, que so conta
+    // tentativa falha. Dava para bater nas recusas sem limite nenhum.
     if (!membro.ativo) {
-      return json(
+      return await recusar(json(
         {
           erro:
             "Esse acesso está bloqueado. Fale com o suporte para entender o motivo.",
         },
         403,
-      );
+      ));
     }
 
     // Conta de admin nunca troca de senha por aqui. Esta porta se abre com
     // e-mail + CPF, dados que circulam; o painel inteiro nao pode depender
-    // disso. Mensagem generica de proposito: nao conta para quem esta
-    // tentando que aquele e-mail e de um administrador.
-    if (membro.admin) {
-      if (querRedefinir) {
-        return json(
-          { erro: "Não é possível redefinir a senha dessa conta por aqui. Fale com o suporte." },
-          403,
-        );
-      }
-      return json({ ja_existia: true, email, pode_redefinir: false });
+    // disso. A recusa usa mensagem generica, igual a de uma falha qualquer,
+    // e a resposta de quem so consultou e identica a de um comprador comum:
+    // nada no retorno conta que aquele e-mail e de um administrador.
+    if (membro.admin && querRedefinir) {
+      return await recusar(
+        json({ erro: "Não foi possível gerar uma senha nova. Fale com o suporte." }, 403),
+      );
     }
 
     if (!querRedefinir) {
+      await registrar(true);
       return json({
         ja_existia: true,
         email,
-        pode_redefinir: true,
         mensagem:
           "Sua conta já está ativa. Entre com o e-mail e a senha que você recebeu na ativação.",
       });
@@ -180,13 +199,29 @@ Deno.serve(async (req) => {
     });
     if (erroSenha) {
       console.error("falha ao redefinir senha:", erroSenha.message);
-      return json({ erro: FALE_COM_SUPORTE }, 500);
+      return await recusar(json({ erro: FALE_COM_SUPORTE }, 500));
     }
 
     // Guarda o sufixo novo: sem isso a linha em `membros` continuaria
-    // descrevendo a senha antiga, que nao vale mais.
-    await supabase.from("membros").update({ sufixo: sufixoNovo }).eq("id", membro.id);
+    // descrevendo a senha antiga. Isso importa porque admin/criar-membro.mjs
+    // remonta a senha a partir desse campo para o suporte ditar ao comprador.
+    const { error: erroSufixo } = await supabase
+      .from("membros")
+      .update({ sufixo: sufixoNovo })
+      .eq("id", membro.id);
 
+    // Falhou aqui: a senha nova JA vale, entao devolver erro deixaria o
+    // comprador trancado do lado de fora sem nunca ver a credencial. Melhor
+    // entregar a senha e gritar no log, que e o suficiente para consertar a
+    // linha na mao depois.
+    if (erroSufixo) {
+      console.error(
+        "senha redefinida mas sufixo nao gravado para", email,
+        "- membros.sufixo esta desatualizado:", erroSufixo.message,
+      );
+    }
+
+    await registrar(true);
     return json({ redefinida: true, email, senha: senhaNova });
   }
 
@@ -202,8 +237,7 @@ Deno.serve(async (req) => {
 
   if (erroAuth || !criado?.user) {
     console.error("falha ao criar usuario:", erroAuth?.message);
-    await registrar(false);
-    return json({ erro: FALE_COM_SUPORTE }, 500);
+    return await recusar(json({ erro: FALE_COM_SUPORTE }, 500));
   }
 
   const { error: erroMembro } = await supabase
@@ -215,8 +249,7 @@ Deno.serve(async (req) => {
     // conta orfa no Auth: o comprador tentaria entrar e nao veria nada.
     await supabase.auth.admin.deleteUser(criado.user.id);
     console.error("falha ao registrar membro:", erroMembro.message);
-    await registrar(false);
-    return json({ erro: FALE_COM_SUPORTE }, 500);
+    return await recusar(json({ erro: FALE_COM_SUPORTE }, 500));
   }
 
   await registrar(true);

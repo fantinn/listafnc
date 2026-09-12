@@ -1,0 +1,137 @@
+# Mantem o projeto do Supabase acordado.
+#
+# No plano free, projeto sem atividade por cerca de 7 dias e pausado - e
+# projeto pausado nao recebe o postback da PerfectPay: a venda e aprovada,
+# a compra nao e gravada, e o comprador nao consegue se liberar.
+#
+# Bater no site nao resolve: listafnc.com.br e GitHub Pages, responde 200
+# sem encostar no Supabase. Por isso a checagem vai no /rest/v1, que passa
+# pelo PostgREST e pelo banco de verdade.
+
+name: keep-alive
+
+on:
+  schedule:
+    # A cada 3 dias. A pausa so vem aos 7, entao sobra folga de sobra mesmo
+    # se o GitHub atrasar ou pular uma execucao (o agendamento e "quando der").
+    - cron: "0 9 */3 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  acordar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # URL e chave saem do proprio supabase-config.js: a chave publishable ja
+      # e publica (esta no site), e lendo de la o monitor acompanha sozinho
+      # se ela for trocada um dia.
+      - name: Checar o Supabase
+        id: checar
+        run: |
+          # sed em vez de grep -P: PCRE depende do locale do runner, sed nao.
+          url=$(sed -n 's/.*SUPABASE_URL = "\([^"]*\)".*/\1/p' supabase-config.js)
+          chave=$(sed -n 's/.*SUPABASE_PUBLISHABLE_KEY = "\([^"]*\)".*/\1/p' supabase-config.js)
+
+          if [ -z "$url" ] || [ -z "$chave" ]; then
+            echo "Nao consegui ler URL/chave de supabase-config.js - o arquivo mudou de formato?"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "codigo=config" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          alvo="$url/rest/v1/categorias?select=chave&limit=1&apikey=$chave"
+
+          codigo=$(curl -s -o /tmp/corpo -w "%{http_code}" --max-time 30 "$alvo" || echo "000")
+          echo "resposta: $codigo"
+          echo "corpo: $(head -c 200 /tmp/corpo)"
+
+          if [ "$codigo" = "200" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "codigo=$codigo" >> "$GITHUB_OUTPUT"
+          fi
+
+      # O GitHub desativa agendamento em repositorio sem commits por 60 dias -
+      # ou seja, o proprio keep-alive dormiria junto. Um commit de vez em
+      # quando zera esse contador. So commita quando ja faz tempo, para nao
+      # encher o historico: ~7 commits por ano, nao 120.
+      - name: Renovar a atividade do repositorio
+        if: always()
+        run: |
+          ultimo=$(git log -1 --format=%ct)
+          agora=$(date +%s)
+          dias=$(( (agora - ultimo) / 86400 ))
+          echo "ultimo commit foi ha $dias dias"
+
+          if [ "$dias" -lt 50 ]; then
+            echo "repositorio ativo, nada a fazer"
+            exit 0
+          fi
+
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/ultima-checagem.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/ultima-checagem.txt
+          git commit -m "keep-alive: marca de atividade (evita o corte de 60 dias)"
+          git push
+
+      # Enviado com curl mesmo, sem action de terceiro: uma action externa
+      # rodaria com permissao de escrita neste repositorio.
+      - name: Avisar por e-mail
+        if: steps.checar.outputs.ok != 'true'
+        env:
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+        run: |
+          if [ -z "$MAIL_PASS" ] || [ -z "$MAIL_USER" ]; then
+            echo "Segredos MAIL_USER/MAIL_PASS nao configurados - pulando o e-mail."
+            exit 0
+          fi
+
+          {
+            echo "From: Monitor listafnc <$MAIL_USER>"
+            echo "To: gfantinss@hotmail.com, lsd.outlet@gmail.com"
+            echo "Subject: [listafnc] ALERTA: o Supabase nao respondeu"
+            echo "Content-Type: text/plain; charset=UTF-8"
+            echo
+            echo "A checagem automatica do banco falhou."
+            echo
+            echo "Resposta recebida: ${{ steps.checar.outputs.codigo }} (esperado: 200)"
+            echo "Quando: $(date -u +'%d/%m/%Y %H:%M') UTC"
+            echo
+            echo "O que isso pode significar:"
+            echo "  - o projeto do Supabase foi pausado por inatividade, ou"
+            echo "  - esta fora do ar por outro motivo."
+            echo
+            echo "Enquanto isso, uma venda aprovada NAO sera gravada e o"
+            echo "comprador nao vai conseguir liberar o acesso sozinho."
+            echo
+            echo "Para resolver: abra https://supabase.com/dashboard/project/syikoanvfyhzyefptbtn"
+            echo "e, se estiver pausado, clique em Restore."
+            echo
+            echo "Detalhes da execucao:"
+            echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > /tmp/email.txt
+
+          curl --silent --show-error --ssl-reqd \
+            --url "smtps://smtp.gmail.com:465" \
+            --user "$MAIL_USER:$MAIL_PASS" \
+            --mail-from "$MAIL_USER" \
+            --mail-rcpt "gfantinss@hotmail.com" \
+            --mail-rcpt "lsd.outlet@gmail.com" \
+            --upload-file /tmp/email.txt
+
+          echo "E-mail de alerta enviado."
+
+      # Depois do e-mail, para a execucao aparecer vermelha no GitHub (que
+      # tambem manda a notificacao propria dele para o dono do repositorio).
+      - name: Marcar a execucao como falha
+        if: steps.checar.outputs.ok != 'true'
+        run: |
+          echo "Supabase respondeu ${{ steps.checar.outputs.codigo }} em vez de 200."
+          exit 1

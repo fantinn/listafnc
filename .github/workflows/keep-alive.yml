@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   acordar:
@@ -128,7 +129,51 @@ jobs:
 
           echo "E-mail de alerta enviado."
 
-      # Depois do e-mail, para a execucao aparecer vermelha no GitHub (que
+      # Alerta que nao depende de segredo nenhum: o GitHub avisa por e-mail
+      # quem acompanha o repositorio quando uma issue e aberta. Serve de rede
+      # de seguranca caso MAIL_USER/MAIL_PASS nao estejam configurados - ou
+      # caso o envio por SMTP falhe.
+      - name: Abrir issue de alerta
+        if: steps.checar.outputs.ok != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Uma issue por queda, nao uma a cada 3 dias enquanto durar.
+          aberta=$(gh issue list --state open --label keep-alive --json number --jq '.[0].number' 2>/dev/null || echo "")
+          if [ -n "$aberta" ]; then
+            echo "Ja existe a issue #$aberta aberta para esta queda."
+            exit 0
+          fi
+
+          gh label create keep-alive --color B60205 --description "Supabase fora do ar" 2>/dev/null || true
+
+          gh issue create \
+            --title "Supabase nao respondeu - o acesso de novos compradores esta parado" \
+            --label keep-alive \
+            --body "$(cat <<CORPO
+          A checagem automatica falhou.
+
+          **Resposta:** \`${{ steps.checar.outputs.codigo }}\` (esperado \`200\`)
+          **Quando:** $(date -u +'%d/%m/%Y %H:%M') UTC
+
+          O motivo mais provavel e o projeto ter sido pausado por inatividade
+          no plano free.
+
+          **O que esta quebrado agora:** uma venda aprovada nao e gravada, e o
+          comprador nao consegue liberar o acesso sozinho.
+
+          **Como resolver:** abra o [painel do projeto](https://supabase.com/dashboard/project/syikoanvfyhzyefptbtn)
+          e clique em *Restore* se estiver pausado.
+
+          Feche esta issue depois de resolver - a proxima queda abre outra.
+
+          [Execucao que detectou]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)
+          CORPO
+          )"
+
+          echo "Issue de alerta aberta."
+
+      # Depois dos alertas, para a execucao aparecer vermelha no GitHub (que
       # tambem manda a notificacao propria dele para o dono do repositorio).
       - name: Marcar a execucao como falha
         if: steps.checar.outputs.ok != 'true'

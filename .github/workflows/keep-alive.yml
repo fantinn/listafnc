@@ -38,7 +38,7 @@ jobs:
       - name: Checar o Supabase
         id: checar
         env:
-          SIMULAR: ${{ inputs.simular_falha }}
+          SIMULAR: "true"  # TESTE TEMPORARIO
         run: |
           # Permite testar o alarme sem esperar uma queda de verdade - sem
           # isso, so se descobre que o aviso esta quebrado no dia em que ele

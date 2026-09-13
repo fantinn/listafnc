@@ -319,23 +319,24 @@
       .info-bloco.atencao::before { background: radial-gradient(130% 90% at 0% 0%, rgba(245,158,11,0.16), transparent 60%); }
       .info-bloco.atencao .icone-info { color: #fbbf24; background: rgba(245,158,11,0.16); border-color: rgba(245,158,11,0.35); }
 
-      /* Precaucoes: cada item numerado, no lugar do "1 - " solto no texto. */
-      .precaucoes-grade { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 26px; }
-      .precaucao-item { display: flex; align-items: flex-start; gap: 12px; }
-      .precaucao-item .numero {
+      /* Lista numerada: cada item com seu numero, no lugar do "1 - " solto
+         no texto. Usada nas Precaucoes e nas Dicas, que tem o mesmo formato. */
+      .lista-numerada { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 26px; }
+      .item-numerado { display: flex; align-items: flex-start; gap: 12px; }
+      .item-numerado .numero {
         flex-shrink: 0; margin-top: 1px;
         display: inline-flex; align-items: center; justify-content: center;
         width: 24px; height: 24px; border-radius: 50%;
         background: rgba(0,102,255,0.15); border: 1px solid rgba(0,102,255,0.32);
         color: var(--sky); font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 0.72rem;
       }
-      .precaucao-item p {
+      .item-numerado p {
         margin: 0; font-size: 0.8rem; line-height: 1.6;
         color: rgba(232,240,255,0.68);
       }
 
       @media (max-width: 640px) {
-        .precaucoes-grade { grid-template-columns: 1fr; }
+        .lista-numerada { grid-template-columns: 1fr; }
         .info-bloco { padding: 20px; }
         .info-cabecalho .icone-info { width: 38px; height: 38px; }
       }
@@ -500,15 +501,42 @@
                 <span class="icone-info"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
                 <h3>Precauções</h3>
               </div>
-              <div class="precaucoes-grade">
-                <div class="precaucao-item"><span class="numero">1</span><p>O fornecedor vende em atacado, focado em quem quer revender. Não insista em fazer pedidos com 1 só tamanho, nem em pegar quantidades menores que o mínimo que eles pedem.</p></div>
-                <div class="precaucao-item"><span class="numero">2</span><p>O fornecedor prioriza vender para quem faz pedido no resumo e na grade, levando quantidade em todos os tamanhos.</p></div>
-                <div class="precaucao-item"><span class="numero">3</span><p>Evite pedir ao fornecedor que envie mais fotos ou vídeos de um produto que ele já te enviou foto. A demanda deles é alta, e eles priorizam atender quem já chega no resumo.</p></div>
-                <div class="precaucao-item"><span class="numero">4</span><p>Chame um fornecedor só quando já estiver com a intenção de realizar o pedido. Ficar mandando muitas mensagens e nunca fechar pedido pode fazer com que, de uma hora para outra, ele pare de te responder. (Não nos responsabilizamos caso isso aconteça.)</p></div>
-                <div class="precaucao-item"><span class="numero">5</span><p>Nunca faça um pedido e depois cancele, pois isso atrasa muito o trabalho dos fornecedores — nesses casos, ele pode nunca mais te atender. (Não nos responsabilizamos caso isso aconteça.)</p></div>
-                <div class="precaucao-item"><span class="numero">6</span><p>Nunca fique pedindo descontos absurdos ou comparando preço de um fornecedor com o outro. Os fornecedores ganham na quantidade, não na unidade — o desconto existe para clientes que compram grandes quantidades e com frequência. Desconto é cortesia, não obrigação do fornecedor.</p></div>
-                <div class="precaucao-item"><span class="numero">7</span><p>Trocas por defeito ou reclamações só são aceitas quando o cliente grava a conferência desde o pacote lacrado até o fim. Se não tem vídeo, não tem como reclamar.</p></div>
-                <div class="precaucao-item"><span class="numero">8</span><p>A demanda dos fornecedores é alta. Mandou mensagem, aguarde — ficar ligando ou mandando várias mensagens só vai atrasar seu atendimento.</p></div>
+              <div class="lista-numerada">
+                <div class="item-numerado"><span class="numero">1</span><p>O fornecedor vende em atacado, focado em quem quer revender. Não insista em fazer pedidos com 1 só tamanho, nem em pegar quantidades menores que o mínimo que eles pedem.</p></div>
+                <div class="item-numerado"><span class="numero">2</span><p>O fornecedor prioriza vender para quem faz pedido no resumo e na grade, levando quantidade em todos os tamanhos.</p></div>
+                <div class="item-numerado"><span class="numero">3</span><p>Evite pedir ao fornecedor que envie mais fotos ou vídeos de um produto que ele já te enviou foto. A demanda deles é alta, e eles priorizam atender quem já chega no resumo.</p></div>
+                <div class="item-numerado"><span class="numero">4</span><p>Chame um fornecedor só quando já estiver com a intenção de realizar o pedido. Ficar mandando muitas mensagens e nunca fechar pedido pode fazer com que, de uma hora para outra, ele pare de te responder. (Não nos responsabilizamos caso isso aconteça.)</p></div>
+                <div class="item-numerado"><span class="numero">5</span><p>Nunca faça um pedido e depois cancele, pois isso atrasa muito o trabalho dos fornecedores — nesses casos, ele pode nunca mais te atender. (Não nos responsabilizamos caso isso aconteça.)</p></div>
+                <div class="item-numerado"><span class="numero">6</span><p>Nunca fique pedindo descontos absurdos ou comparando preço de um fornecedor com o outro. Os fornecedores ganham na quantidade, não na unidade — o desconto existe para clientes que compram grandes quantidades e com frequência. Desconto é cortesia, não obrigação do fornecedor.</p></div>
+                <div class="item-numerado"><span class="numero">7</span><p>Trocas por defeito ou reclamações só são aceitas quando o cliente grava a conferência desde o pacote lacrado até o fim. Se não tem vídeo, não tem como reclamar.</p></div>
+                <div class="item-numerado"><span class="numero">8</span><p>A demanda dos fornecedores é alta. Mandou mensagem, aguarde — ficar ligando ou mandando várias mensagens só vai atrasar seu atendimento.</p></div>
+              </div>
+            </div>
+
+            <!-- Ultimo bloco da pagina, de proposito: dica de negocio, nao
+                 sobre como usar a lista - fecha o conteudo, nao compete com
+                 as precaucoes (essas sim, sobre os fornecedores). -->
+            <div class="info-bloco">
+              <div class="info-cabecalho">
+                <span class="icone-info"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i></span>
+                <h3>15 dicas para o seu negócio</h3>
+              </div>
+              <div class="lista-numerada">
+                <div class="item-numerado"><span class="numero">1</span><p><strong>Foque nos seus próprios resultados.</strong> Nunca baseie o sucesso da sua loja nos resultados de outras. Cada negócio possui uma realidade diferente. Analise sua própria evolução e busque melhorar constantemente.</p></div>
+                <div class="item-numerado"><span class="numero">2</span><p><strong>Tenha cuidado ao trazer novos produtos.</strong> Não compre um produto apenas porque um concorrente está vendendo bem. Nem toda tendência funciona para todos os públicos. Conheça seus clientes antes de investir.</p></div>
+                <div class="item-numerado"><span class="numero">3</span><p><strong>Profissionalize suas redes sociais.</strong> Mantenha suas redes sociais organizadas, com boas fotos, posts profissionais e conteúdo frequente. Estar ativo ajuda a fortalecer sua marca e atrair novos clientes.</p></div>
+                <div class="item-numerado"><span class="numero">4</span><p><strong>Invista em tráfego pago.</strong> Não dependa somente do alcance orgânico. Anúncios bem planejados podem apresentar sua loja para milhares de novos clientes e aumentar suas oportunidades de venda.</p></div>
+                <div class="item-numerado"><span class="numero">5</span><p><strong>Valorize o nome e a logomarca da sua loja.</strong> Evite mudanças frequentes no nome ou na identidade visual. São elementos que fazem o público reconhecer e lembrar da sua marca.</p></div>
+                <div class="item-numerado"><span class="numero">6</span><p><strong>Organize suas finanças.</strong> Nunca misture o dinheiro da empresa com suas finanças pessoais. Conheça sua margem de lucro, controle entradas e despesas e estabeleça uma retirada mensal para você.</p></div>
+                <div class="item-numerado"><span class="numero">7</span><p><strong>Separe opiniões pessoais da sua marca.</strong> Evite envolver sua empresa desnecessariamente em assuntos como política, religião ou temas polêmicos. Uma opinião pessoal pode acabar afetando a imagem do negócio.</p></div>
+                <div class="item-numerado"><span class="numero">8</span><p><strong>Reserve tempo para inovar.</strong> Analise regularmente o que está ou não trazendo resultados. Corrija o que não funciona, aprimore o que funciona e esteja sempre buscando novas ideias.</p></div>
+                <div class="item-numerado"><span class="numero">9</span><p><strong>Crie algo que faça o cliente lembrar da sua marca.</strong> Se possível, envie pequenos brindes junto aos pedidos. Adesivos de qualidade com sua logomarca, por exemplo, possuem baixo custo e ajudam a fortalecer sua marca.</p></div>
+                <div class="item-numerado"><span class="numero">10</span><p><strong>Ofereça um bom atendimento em todas as situações.</strong> O atendimento deve ser profissional tanto na primeira compra quanto no pós-venda, incluindo dúvidas, trocas e devoluções. A experiência do cliente não termina após o pagamento.</p></div>
+                <div class="item-numerado"><span class="numero">11</span><p><strong>Busque estar sempre à frente.</strong> Acompanhe novos produtos, tendências e formatos de conteúdo. Quanto mais atualizado estiver o seu negócio, maiores serão suas oportunidades de se destacar.</p></div>
+                <div class="item-numerado"><span class="numero">12</span><p><strong>Ofereça variedade aos seus clientes.</strong> Ter boas opções de modelos, cores, tamanhos e produtos aumenta as possibilidades de escolha e pode contribuir para vendas maiores por cliente.</p></div>
+                <div class="item-numerado"><span class="numero">13</span><p><strong>Precifique seus produtos corretamente.</strong> Ter o menor preço nem sempre significa ter o melhor negócio. Considere custos, impostos, despesas e margem de lucro para estabelecer um preço saudável e sustentável.</p></div>
+                <div class="item-numerado"><span class="numero">14</span><p><strong>Padronize seus horários de atendimento.</strong> Estabeleça horários para iniciar e encerrar o trabalho. Ter organização permite administrar melhor a empresa sem deixar de preservar sua vida pessoal e seu descanso.</p></div>
+                <div class="item-numerado"><span class="numero">15</span><p><strong>Tenha cuidado com promoções em excesso.</strong> Promoções frequentes podem fazer o cliente se acostumar a comprar somente quando houver desconto. Utilize ofertas de forma estratégica, preservando o valor dos seus produtos e da sua marca.</p></div>
               </div>
             </div>
           </div>

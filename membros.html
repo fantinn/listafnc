@@ -387,10 +387,88 @@
       .caixa-aviso .grave { color: #fca5a5; font-weight: 600; }
       .caixa-aviso .btn-blue { width: 100%; margin-top: 10px; justify-content: center; }
 
+      /* Botao-convite: paragrafo + botao, sem a grade da precaucoes - so
+         texto corrido dentro do info-bloco padrao. */
+      .dicas-cta p { font-size: 0.88rem; line-height: 1.65; color: rgba(232,240,255,0.75); margin-bottom: 18px; }
+
+      /* Popup das dicas: mesmo fundo com blur do aviso obrigatorio, mas
+         fecha livremente (X, clique fora, Esc) - por isso o proprio nome
+         diferente (fundo-dicas, nao fundo-aviso). */
+      .fundo-dicas {
+        position: fixed; inset: 0; z-index: 300;
+        display: flex; align-items: center; justify-content: center;
+        padding: 20px;
+        background: rgba(3,4,6,0.86);
+        backdrop-filter: blur(6px);
+        overflow-y: auto;
+      }
+      .caixa-dicas {
+        position: relative; overflow: hidden;
+        width: 100%; max-width: 480px; margin: auto;
+        padding: 36px 30px 28px;
+        border-radius: 20px;
+        background: var(--darker);
+        border: 1px solid rgba(0,102,255,0.35);
+        box-shadow: 0 30px 60px -20px rgba(0,0,0,0.9);
+        text-align: left;
+      }
+      .caixa-dicas::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background: radial-gradient(120% 90% at 100% 0%, rgba(0,102,255,0.18), transparent 60%);
+      }
+      .caixa-dicas > * { position: relative; }
+
+      .fechar-dicas {
+        position: absolute; top: 14px; right: 14px;
+        width: 34px; height: 34px; border-radius: 9px; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+        color: rgba(232,240,255,0.7);
+      }
+      .fechar-dicas:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+      .selo-dicas {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 6px 12px; border-radius: 999px; margin-bottom: 22px;
+        background: rgba(0,102,255,0.14); color: var(--sky);
+        font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      }
+
+      /* Numero grande, apagado: marca "qual dica e essa" sem competir com o
+         titulo, que e o que a pessoa realmente vai ler. */
+      .dica-numero {
+        font-family: "Space Grotesk", sans-serif; font-weight: 700;
+        font-size: 2.4rem; line-height: 1; color: rgba(0,102,255,0.4);
+        margin-bottom: 8px;
+      }
+      .dica-titulo {
+        font-family: "Space Grotesk", sans-serif; font-weight: 700;
+        font-size: 1.3rem; line-height: 1.35; color: #fff; margin-bottom: 14px;
+      }
+      .dica-texto { font-size: 0.92rem; line-height: 1.75; color: rgba(232,240,255,0.78); }
+
+      .dicas-rodape {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-top: 28px; padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
+      .dica-seta {
+        width: 42px; height: 42px; border-radius: 11px; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(0,102,255,0.12); border: 1px solid rgba(0,102,255,0.3);
+        color: var(--sky); transition: background 0.15s, opacity 0.15s;
+      }
+      .dica-seta:hover:not(:disabled) { background: rgba(0,102,255,0.26); }
+      .dica-seta:disabled { opacity: 0.3; cursor: default; }
+      .dica-progresso { font-size: 0.76rem; letter-spacing: 0.05em; color: rgba(232,240,255,0.5); }
+
       @media (max-width: 640px) {
         .topo .quem { display: none; }
         .caixa-aviso { padding: 22px 20px; }
         .caixa-aviso h2 { font-size: 1.15rem; }
+        .caixa-dicas { padding: 30px 22px 24px; }
+        .dica-numero { font-size: 2rem; }
+        .dica-titulo { font-size: 1.12rem; }
         .grade { grid-template-columns: 1fr; }
 
         /* Duas colunas: em coluna única só cabiam ~2 categorias na tela e
@@ -439,6 +517,29 @@
         </p>
         <p>Para voltar a acessar, será necessário adquirir um novo acesso.</p>
         <button class="btn-blue" id="fecharAviso" type="button">Li e entendi</button>
+      </div>
+    </div>
+
+    <!-- Dicas da LSD Outlet: uma por vez, aberta so por quem clica no botao
+         (ao contrario do aviso acima, fecha pelo X, clicando fora ou Esc). -->
+    <div class="fundo-dicas" id="fundoDicas" hidden role="dialog" aria-modal="true" aria-labelledby="dicaTitulo">
+      <div class="caixa-dicas">
+        <button class="fechar-dicas" id="fecharDicas" type="button" aria-label="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <span class="selo-dicas"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Dicas da LSD Outlet</span>
+        <div class="dica-numero" id="dicaNumero" aria-hidden="true"></div>
+        <h2 class="dica-titulo" id="dicaTitulo"></h2>
+        <p class="dica-texto" id="dicaTexto"></p>
+        <div class="dicas-rodape">
+          <button class="dica-seta" id="dicaAnterior" type="button" aria-label="Dica anterior">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <span class="dica-progresso" id="dicaProgresso"></span>
+          <button class="dica-seta" id="dicaProxima" type="button" aria-label="Próxima dica">
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -515,29 +616,21 @@
 
             <!-- Ultimo bloco da pagina, de proposito: dica de negocio, nao
                  sobre como usar a lista - fecha o conteudo, nao compete com
-                 as precaucoes (essas sim, sobre os fornecedores). -->
-            <div class="info-bloco">
+                 as precaucoes (essas sim, sobre os fornecedores). O conteudo
+                 das 15 dicas vive no JS (array DICAS), lido uma de cada vez
+                 no popup - aqui so o convite para abrir. -->
+            <div class="info-bloco dicas-cta">
               <div class="info-cabecalho">
                 <span class="icone-info"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i></span>
-                <h3>15 dicas para o seu negócio</h3>
+                <h3>Dicas da LSD Outlet</h3>
               </div>
-              <div class="lista-numerada">
-                <div class="item-numerado"><span class="numero">1</span><p><strong>Foque nos seus próprios resultados.</strong> Nunca baseie o sucesso da sua loja nos resultados de outras. Cada negócio possui uma realidade diferente. Analise sua própria evolução e busque melhorar constantemente.</p></div>
-                <div class="item-numerado"><span class="numero">2</span><p><strong>Tenha cuidado ao trazer novos produtos.</strong> Não compre um produto apenas porque um concorrente está vendendo bem. Nem toda tendência funciona para todos os públicos. Conheça seus clientes antes de investir.</p></div>
-                <div class="item-numerado"><span class="numero">3</span><p><strong>Profissionalize suas redes sociais.</strong> Mantenha suas redes sociais organizadas, com boas fotos, posts profissionais e conteúdo frequente. Estar ativo ajuda a fortalecer sua marca e atrair novos clientes.</p></div>
-                <div class="item-numerado"><span class="numero">4</span><p><strong>Invista em tráfego pago.</strong> Não dependa somente do alcance orgânico. Anúncios bem planejados podem apresentar sua loja para milhares de novos clientes e aumentar suas oportunidades de venda.</p></div>
-                <div class="item-numerado"><span class="numero">5</span><p><strong>Valorize o nome e a logomarca da sua loja.</strong> Evite mudanças frequentes no nome ou na identidade visual. São elementos que fazem o público reconhecer e lembrar da sua marca.</p></div>
-                <div class="item-numerado"><span class="numero">6</span><p><strong>Organize suas finanças.</strong> Nunca misture o dinheiro da empresa com suas finanças pessoais. Conheça sua margem de lucro, controle entradas e despesas e estabeleça uma retirada mensal para você.</p></div>
-                <div class="item-numerado"><span class="numero">7</span><p><strong>Separe opiniões pessoais da sua marca.</strong> Evite envolver sua empresa desnecessariamente em assuntos como política, religião ou temas polêmicos. Uma opinião pessoal pode acabar afetando a imagem do negócio.</p></div>
-                <div class="item-numerado"><span class="numero">8</span><p><strong>Reserve tempo para inovar.</strong> Analise regularmente o que está ou não trazendo resultados. Corrija o que não funciona, aprimore o que funciona e esteja sempre buscando novas ideias.</p></div>
-                <div class="item-numerado"><span class="numero">9</span><p><strong>Crie algo que faça o cliente lembrar da sua marca.</strong> Se possível, envie pequenos brindes junto aos pedidos. Adesivos de qualidade com sua logomarca, por exemplo, possuem baixo custo e ajudam a fortalecer sua marca.</p></div>
-                <div class="item-numerado"><span class="numero">10</span><p><strong>Ofereça um bom atendimento em todas as situações.</strong> O atendimento deve ser profissional tanto na primeira compra quanto no pós-venda, incluindo dúvidas, trocas e devoluções. A experiência do cliente não termina após o pagamento.</p></div>
-                <div class="item-numerado"><span class="numero">11</span><p><strong>Busque estar sempre à frente.</strong> Acompanhe novos produtos, tendências e formatos de conteúdo. Quanto mais atualizado estiver o seu negócio, maiores serão suas oportunidades de se destacar.</p></div>
-                <div class="item-numerado"><span class="numero">12</span><p><strong>Ofereça variedade aos seus clientes.</strong> Ter boas opções de modelos, cores, tamanhos e produtos aumenta as possibilidades de escolha e pode contribuir para vendas maiores por cliente.</p></div>
-                <div class="item-numerado"><span class="numero">13</span><p><strong>Precifique seus produtos corretamente.</strong> Ter o menor preço nem sempre significa ter o melhor negócio. Considere custos, impostos, despesas e margem de lucro para estabelecer um preço saudável e sustentável.</p></div>
-                <div class="item-numerado"><span class="numero">14</span><p><strong>Padronize seus horários de atendimento.</strong> Estabeleça horários para iniciar e encerrar o trabalho. Ter organização permite administrar melhor a empresa sem deixar de preservar sua vida pessoal e seu descanso.</p></div>
-                <div class="item-numerado"><span class="numero">15</span><p><strong>Tenha cuidado com promoções em excesso.</strong> Promoções frequentes podem fazer o cliente se acostumar a comprar somente quando houver desconto. Utilize ofertas de forma estratégica, preservando o valor dos seus produtos e da sua marca.</p></div>
-              </div>
+              <p>
+                15 dicas práticas de quem monta um negócio de revenda todo dia — dos
+                primeiros produtos até a hora de precificar certo.
+              </p>
+              <button class="btn-blue" id="abrirDicas" type="button">
+                <i class="fa-solid fa-lightbulb"></i> Dicas da LSD Outlet
+              </button>
             </div>
           </div>
         </div>
@@ -618,6 +711,77 @@
       document.getElementById("sair").addEventListener("click", async () => {
         await supabase.auth.signOut();
         window.location.replace("login.html");
+      });
+
+      // 1c. Popup das dicas: uma por vez, para cada uma ganhar espaço
+      //     proprio em vez de ficar espremida numa grade de 15.
+      const DICAS = [
+        { titulo: "Foque nos seus próprios resultados", texto: "Nunca baseie o sucesso da sua loja nos resultados de outras. Cada negócio possui uma realidade diferente. Analise sua própria evolução e busque melhorar constantemente." },
+        { titulo: "Tenha cuidado ao trazer novos produtos", texto: "Não compre um produto apenas porque um concorrente está vendendo bem. Nem toda tendência funciona para todos os públicos. Conheça seus clientes antes de investir." },
+        { titulo: "Profissionalize suas redes sociais", texto: "Mantenha suas redes sociais organizadas, com boas fotos, posts profissionais e conteúdo frequente. Estar ativo ajuda a fortalecer sua marca e atrair novos clientes." },
+        { titulo: "Invista em tráfego pago", texto: "Não dependa somente do alcance orgânico. Anúncios bem planejados podem apresentar sua loja para milhares de novos clientes e aumentar suas oportunidades de venda." },
+        { titulo: "Valorize o nome e a logomarca da sua loja", texto: "Evite mudanças frequentes no nome ou na identidade visual. São elementos que fazem o público reconhecer e lembrar da sua marca." },
+        { titulo: "Organize suas finanças", texto: "Nunca misture o dinheiro da empresa com suas finanças pessoais. Conheça sua margem de lucro, controle entradas e despesas e estabeleça uma retirada mensal para você." },
+        { titulo: "Separe opiniões pessoais da sua marca", texto: "Evite envolver sua empresa desnecessariamente em assuntos como política, religião ou temas polêmicos. Uma opinião pessoal pode acabar afetando a imagem do negócio." },
+        { titulo: "Reserve tempo para inovar", texto: "Analise regularmente o que está ou não trazendo resultados. Corrija o que não funciona, aprimore o que funciona e esteja sempre buscando novas ideias." },
+        { titulo: "Crie algo que faça o cliente lembrar da sua marca", texto: "Se possível, envie pequenos brindes junto aos pedidos. Adesivos de qualidade com sua logomarca, por exemplo, possuem baixo custo e ajudam a fortalecer sua marca." },
+        { titulo: "Ofereça um bom atendimento em todas as situações", texto: "O atendimento deve ser profissional tanto na primeira compra quanto no pós-venda, incluindo dúvidas, trocas e devoluções. A experiência do cliente não termina após o pagamento." },
+        { titulo: "Busque estar sempre à frente", texto: "Acompanhe novos produtos, tendências e formatos de conteúdo. Quanto mais atualizado estiver o seu negócio, maiores serão suas oportunidades de se destacar." },
+        { titulo: "Ofereça variedade aos seus clientes", texto: "Ter boas opções de modelos, cores, tamanhos e produtos aumenta as possibilidades de escolha e pode contribuir para vendas maiores por cliente." },
+        { titulo: "Precifique seus produtos corretamente", texto: "Ter o menor preço nem sempre significa ter o melhor negócio. Considere custos, impostos, despesas e margem de lucro para estabelecer um preço saudável e sustentável." },
+        { titulo: "Padronize seus horários de atendimento", texto: "Estabeleça horários para iniciar e encerrar o trabalho. Ter organização permite administrar melhor a empresa sem deixar de preservar sua vida pessoal e seu descanso." },
+        { titulo: "Tenha cuidado com promoções em excesso", texto: "Promoções frequentes podem fazer o cliente se acostumar a comprar somente quando houver desconto. Utilize ofertas de forma estratégica, preservando o valor dos seus produtos e da sua marca." },
+      ];
+
+      const fundoDicas = document.getElementById("fundoDicas");
+      const dicaNumero = document.getElementById("dicaNumero");
+      const dicaTitulo = document.getElementById("dicaTitulo");
+      const dicaTexto = document.getElementById("dicaTexto");
+      const dicaProgresso = document.getElementById("dicaProgresso");
+      const dicaAnterior = document.getElementById("dicaAnterior");
+      const dicaProxima = document.getElementById("dicaProxima");
+      let dicaAtual = 0;
+
+      function renderDica() {
+        const d = DICAS[dicaAtual];
+        dicaNumero.textContent = String(dicaAtual + 1).padStart(2, "0");
+        dicaTitulo.textContent = d.titulo;
+        dicaTexto.textContent = d.texto;
+        dicaProgresso.textContent = `${dicaAtual + 1} de ${DICAS.length}`;
+        dicaAnterior.disabled = dicaAtual === 0;
+        dicaProxima.disabled = dicaAtual === DICAS.length - 1;
+      }
+
+      function abrirDicas() {
+        dicaAtual = 0;
+        renderDica();
+        fundoDicas.hidden = false;
+        document.body.style.overflow = "hidden";
+      }
+
+      function fecharDicas() {
+        fundoDicas.hidden = true;
+        document.body.style.overflow = "";
+      }
+
+      document.getElementById("abrirDicas").addEventListener("click", abrirDicas);
+      document.getElementById("fecharDicas").addEventListener("click", fecharDicas);
+      // Clique no fundo escuro tambem fecha; clique dentro da caixa, nao -
+      // por isso confere se o alvo do clique e o proprio fundo.
+      fundoDicas.addEventListener("click", (evento) => {
+        if (evento.target === fundoDicas) fecharDicas();
+      });
+      dicaAnterior.addEventListener("click", () => {
+        if (dicaAtual > 0) { dicaAtual--; renderDica(); }
+      });
+      dicaProxima.addEventListener("click", () => {
+        if (dicaAtual < DICAS.length - 1) { dicaAtual++; renderDica(); }
+      });
+      document.addEventListener("keydown", (evento) => {
+        if (fundoDicas.hidden) return;
+        if (evento.key === "Escape") fecharDicas();
+        else if (evento.key === "ArrowLeft" && !dicaAnterior.disabled) { dicaAtual--; renderDica(); }
+        else if (evento.key === "ArrowRight" && !dicaProxima.disabled) { dicaAtual++; renderDica(); }
       });
 
       // 2. Admin ganha o atalho para o painel de edicao.

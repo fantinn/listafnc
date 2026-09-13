@@ -12,5 +12,6 @@ export const ARQUIVO = "lista.pdf";
 // Validade do link assinado, em segundos.
 export const VALIDADE_LINK = 60;
 
-// Suporte (mesmo numero usado no botao flutuante da landing).
-export const WHATSAPP = "https://wa.me/5527998706492?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20o%20meu%20acesso";
+// Suporte (numero proprio - diferente do botao flutuante da landing,
+// que continua com o numero de vendas em index.html).
+export const WHATSAPP = "https://wa.me/5527997282508?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20o%20meu%20acesso";

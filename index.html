@@ -213,11 +213,9 @@
       }
       .faq-item.open .faq-question i { transform: rotate(180deg); }
       .faq-answer {
-        display: grid; grid-template-rows: 0fr;
-        transition: grid-template-rows 0.4s cubic-bezier(0.22,1,0.36,1);
+        height: 0; overflow: hidden;
+        transition: height 0.4s cubic-bezier(0.22,1,0.36,1);
       }
-      .faq-item.open .faq-answer { grid-template-rows: 1fr; }
-      .faq-answer-inner { overflow: hidden; }
       .faq-answer-inner p { padding: 0 22px 20px; font-size: 0.88rem; line-height: 1.7; color: rgba(232,240,255,0.65); }
 
       .price-old {
@@ -636,18 +634,41 @@
 
         document.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale").forEach((el) => observer.observe(el));
 
+        const setHeight = (el, value) => el.style.setProperty("height", value, "important");
+        const closeFaqItem = (item) => {
+          const answer = item.querySelector(".faq-answer");
+          setHeight(answer, answer.scrollHeight + "px");
+          requestAnimationFrame(() => {
+            item.classList.remove("open");
+            item.querySelector(".faq-question").setAttribute("aria-expanded", "false");
+            setHeight(answer, "0px");
+          });
+        };
+        const openFaqItem = (item) => {
+          const answer = item.querySelector(".faq-answer");
+          item.classList.add("open");
+          item.querySelector(".faq-question").setAttribute("aria-expanded", "true");
+          setHeight(answer, answer.scrollHeight + "px");
+          answer.addEventListener("transitionend", function onEnd(e) {
+            if (e.propertyName === "height") {
+              if (item.classList.contains("open")) setHeight(answer, "auto");
+              answer.removeEventListener("transitionend", onEnd);
+            }
+          });
+        };
+
         document.querySelectorAll(".faq-item").forEach((item) => {
           const question = item.querySelector(".faq-question");
           question.addEventListener("click", () => {
             const isOpen = item.classList.contains("open");
             document.querySelectorAll(".faq-item.open").forEach((openItem) => {
-              if (openItem !== item) {
-                openItem.classList.remove("open");
-                openItem.querySelector(".faq-question").setAttribute("aria-expanded", "false");
-              }
+              if (openItem !== item) closeFaqItem(openItem);
             });
-            item.classList.toggle("open", !isOpen);
-            question.setAttribute("aria-expanded", String(!isOpen));
+            if (isOpen) {
+              closeFaqItem(item);
+            } else {
+              openFaqItem(item);
+            }
           });
         });
 

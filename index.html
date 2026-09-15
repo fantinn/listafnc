@@ -227,7 +227,9 @@
         background: rgba(0,102,255,0.15); color: var(--sky);
         display: flex; align-items: center; justify-content: center;
         font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 0.9rem;
+        transition: background 0.3s, color 0.3s;
       }
+      .card:hover .feedback-avatar { background: var(--blue); color: #fff; }
       .feedback-name { font-weight: 700; font-size: 0.92rem; color: var(--light); }
       .feedback-empresa { font-size: 0.76rem; color: rgba(232,240,255,0.45); margin-top: 2px; }
       .stars { display: flex; gap: 3px; }
@@ -239,55 +241,6 @@
         font-size: 0.68rem; color: rgba(232,240,255,0.35); letter-spacing: 0.08em;
         display: flex; align-items: center; gap: 6px;
       }
-
-      .feedback-toggle-wrap { display: flex; justify-content: center; margin-top: 32px; }
-      .feedback-form-wrap { height: 0; overflow: hidden; transition: height 0.4s cubic-bezier(0.22,1,0.36,1); }
-      .feedback-form {
-        max-width: 560px; margin: 24px auto 0;
-        background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
-        border: 1px solid rgba(0,102,255,0.2); border-radius: 20px; padding: 28px;
-      }
-      .feedback-form label {
-        display: block; font-size: 0.7rem; letter-spacing: 0.1em;
-        color: rgba(232,240,255,0.6); margin-bottom: 8px;
-      }
-      .feedback-form .field { margin-bottom: 18px; }
-      .feedback-form input[type="text"],
-      .feedback-form textarea {
-        width: 100%; padding: 14px 16px;
-        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 12px; color: var(--light); font-family: "Inter", sans-serif; font-size: 0.9rem;
-        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-      }
-      .feedback-form textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
-      .feedback-form input[type="text"]:focus,
-      .feedback-form textarea:focus {
-        outline: none; border-color: var(--blue);
-        background: rgba(0,102,255,0.08); box-shadow: 0 0 0 3px rgba(0,102,255,0.15);
-      }
-      .feedback-form input::placeholder,
-      .feedback-form textarea::placeholder { color: rgba(232,240,255,0.28); }
-
-      .star-rating { display: flex; gap: 8px; }
-      .star-btn {
-        background: none; border: none; cursor: pointer; padding: 4px;
-        font-size: 1.4rem; color: rgba(232,240,255,0.2); transition: color 0.15s, transform 0.15s;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .star-btn:hover, .star-btn:focus-visible { transform: scale(1.12); }
-      .star-btn.filled { color: var(--sky); }
-      .star-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 4px; }
-
-      .form-msg {
-        display: none; align-items: flex-start; gap: 10px;
-        border-radius: 10px; padding: 12px 14px; margin-bottom: 18px;
-        font-size: 0.8rem; line-height: 1.5;
-      }
-      .form-msg.visivel { display: flex; }
-      .form-msg.erro { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; }
-      .form-msg.info { background: rgba(0,102,255,0.1); border: 1px solid rgba(0,102,255,0.3); color: var(--sky); }
-
-      .feedback-form .btn-blue { width: 100%; }
 
       .price-old {
         font-family: "Space Grotesk", sans-serif; font-size: 0.85rem;
@@ -370,8 +323,6 @@
         .faq-answer-inner p { padding: 0 16px 16px !important; font-size: 0.82rem !important; }
 
         .feedback-card { padding: 18px !important; border-radius: 16px !important; }
-        .feedback-form { padding: 20px !important; border-radius: 16px !important; }
-        .star-btn { font-size: 1.6rem !important; padding: 6px !important; }
 
         .offer-card { border-radius: 18px !important; padding: 20px 16px !important; }
         .price-new { font-size: clamp(2rem, 12vw, 2.8rem) !important; }
@@ -557,69 +508,60 @@
       </div>
     </section>
 
-    <!-- ====== FEEDBACK DOS CLIENTES ====== -->
-    <section id="feedback" class="section-mobile-pad" style="padding:60px 0;">
-      <div class="container">
-        <div class="reveal" style="text-align:center;margin-bottom:36px;">
-          <span class="badge">PROVA SOCIAL</span>
-          <h2 style="font-size:clamp(1.5rem,3.5vw,2.5rem);font-weight:700;color:var(--light);margin-top:16px;margin-bottom:12px;">Quem já comprou aprova</h2>
-          <p class="text-muted" style="font-size:0.9rem;max-width:480px;margin:0 auto;line-height:1.7;">VEJA O QUE OUTROS LOJISTAS DIZEM DEPOIS DE COMEÇAR A USAR A NOSSA LISTA DE FORNECEDORES.</p>
-        </div>
+    <!-- ====== OFERTA ====== -->
+    <section id="comprar" style="padding:48px 0;position:relative;z-index:10;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,102,255,0.026),transparent);filter:blur(60px);pointer-events:none;"></div>
+      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:420px;height:220px;background:rgba(0,102,255,0.08);border-radius:50%;filter:blur(90px);pointer-events:none;"></div>
 
-        <div class="feedback-grid" id="feedbackGrid"></div>
+      <div class="container-sm" style="position:relative;z-index:1;padding:0 16px;">
+        <div class="offer-card reveal reveal-scale" style="background:var(--darker);border:1px solid #0066ff80;border-radius:24px;padding:clamp(20px,3vw,32px);text-align:center;box-shadow:0 0 60px rgba(0,102,255,0.18);">
 
-        <div class="feedback-toggle-wrap reveal">
-          <button type="button" class="btn-blue" id="feedbackToggleBtn" aria-expanded="false" aria-controls="feedbackFormWrap">
-            <i class="fa-solid fa-comment-dots" id="feedbackToggleIcon"></i>
-            <span id="feedbackToggleLabel">Quero deixar meu feedback</span>
-          </button>
-        </div>
+          <div style="display:inline-flex;align-items:center;gap:10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);padding:7px 14px;border-radius:999px;margin-bottom:18px;">
+            <span style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.92);font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;">
+              <i class="fa-solid fa-bolt" style="color:#f87171;"></i>
+              OFERTA EXPIRA EM
+            </span>
+            <strong style="font-family:'Space Grotesk',sans-serif;font-weight:800;color:#f87171;font-size:0.85rem;letter-spacing:0.12em;" id="offerTimer">30:00</strong>
+          </div>
 
-        <div class="feedback-form-wrap" id="feedbackFormWrap">
-          <form class="feedback-form" id="feedbackForm" novalidate>
-            <div class="form-msg erro" id="feedbackErro">
-              <i class="fa-solid fa-circle-exclamation" style="margin-top:2px;"></i>
-              <span id="feedbackErroTexto"></span>
-            </div>
-            <div class="form-msg info" id="feedbackInfo">
-              <i class="fa-solid fa-circle-info" style="margin-top:2px;"></i>
-              <span>Formulário validado! A integração para salvar os feedbacks automaticamente ainda está sendo conectada — por enquanto este envio é apenas uma demonstração da interface.</span>
-            </div>
+          <h2 style="font-size:clamp(1.3rem,3vw,2rem);font-weight:700;color:var(--light);margin-bottom:8px;">LISTA DE FORNECEDORES</h2>
+          <p class="text-faint" style="margin-bottom:20px;font-size:0.9rem;">+ BÔNUS EXCLUSIVO</p>
 
-            <div class="field">
-              <label for="feedbackNome">Nome</label>
-              <input type="text" id="feedbackNome" name="nome" placeholder="Seu nome" autocomplete="name" />
-            </div>
+          <div style="margin-bottom:4px;">
+            <span class="price-old">DE <span>R$ 700,00</span></span>
+            <!-- Parcelas menor, acima -->
+            <span style="font-family:'Space Grotesk',sans-serif;font-size:0.82rem;color:rgba(232,240,255,0.5);letter-spacing:0.12em;display:block;margin:8px 0 2px;">OU 12X DE <strong style="color:#00c853;">R$ 29,21</strong></span>
+            <!-- Preço à vista em destaque -->
+            <span class="price-new">R$ 297,90</span>
+          </div>
 
-            <div class="field">
-              <label for="feedbackEmpresa">Empresa ou segmento <span style="text-transform:none;opacity:0.6;">(opcional)</span></label>
-              <input type="text" id="feedbackEmpresa" name="empresa" placeholder="Ex.: loja de roupas, brechó..." autocomplete="organization" />
-            </div>
+          <p class="text-faint" style="font-size:0.78rem;margin-bottom:24px;margin-top:8px;">pagamento único · entrega imediata</p>
 
-            <div class="field">
-              <label>Sua nota</label>
-              <div class="star-rating" id="feedbackStars" role="radiogroup" aria-label="Nota de 1 a 5 estrelas">
-                <button type="button" class="star-btn" data-value="1" role="radio" aria-checked="false" aria-label="1 estrela"><i class="fa-solid fa-star"></i></button>
-                <button type="button" class="star-btn" data-value="2" role="radio" aria-checked="false" aria-label="2 estrelas"><i class="fa-solid fa-star"></i></button>
-                <button type="button" class="star-btn" data-value="3" role="radio" aria-checked="false" aria-label="3 estrelas"><i class="fa-solid fa-star"></i></button>
-                <button type="button" class="star-btn" data-value="4" role="radio" aria-checked="false" aria-label="4 estrelas"><i class="fa-solid fa-star"></i></button>
-                <button type="button" class="star-btn" data-value="5" role="radio" aria-checked="false" aria-label="5 estrelas"><i class="fa-solid fa-star"></i></button>
-              </div>
-              <input type="hidden" id="feedbackNota" value="0" />
-            </div>
+          <ul style="list-style:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;margin-bottom:20px;display:flex;flex-direction:column;gap:10px;text-align:left;">
+            <li style="display:flex;align-items:flex-start;gap:10px;color:rgba(232,240,255,0.8);font-size:0.88rem;line-height:1.5;">
+              <i class="fa-solid fa-check" style="color:var(--sky);width:16px;flex-shrink:0;margin-top:2px;"></i>LISTA COMPLETA DE FORNECEDORES DE CONFIANÇA
+            </li>
+            <li style="display:flex;align-items:flex-start;gap:10px;color:rgba(232,240,255,0.8);font-size:0.88rem;line-height:1.5;">
+              <i class="fa-solid fa-check" style="color:var(--sky);width:16px;flex-shrink:0;margin-top:2px;"></i>BÔNUS DE CONTATOS DOS PROFISSIONAIS QUE CUIDAM DE CADA DETALHE DA NOSSA LOJA
+            </li>
+          </ul>
 
-            <div class="field">
-              <label for="feedbackTexto">Seu feedback</label>
-              <textarea id="feedbackTexto" name="texto" placeholder="Conte como foi sua experiência com a lista de fornecedores..."></textarea>
-            </div>
+          <a href="https://go.perfectpay.com.br/PPU38CQB5SG" target="_blank" class="btn-blue pulse" style="width:100%;font-size:0.95rem;padding:18px 24px;margin-bottom:14px;">
+            GARANTIR AGORA A LISTA!!!
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
 
-            <button type="submit" class="btn-blue">
-              Enviar feedback
-              <i class="fa-solid fa-paper-plane"></i>
-            </button>
-          </form>
+          <p class="text-faint" style="font-size:0.72rem;">
+            <i class="fa-solid fa-lock" style="margin-right:5px;color:var(--sky);"></i>
+            Compra 100% segura · Entrega por e-mail imediata
+          </p>
         </div>
       </div>
+    </section>
+
+    <!-- ====== IMAGEM LISTA COMPLETA ====== -->
+    <section style="padding:60px 0 20px;">
+      <img class="lista-image reveal" src="listaCompleta.png" alt="Lista completa" style="width:100%;max-width:640px;height:auto;display:block;margin:0 auto;" />
     </section>
 
     <!-- ====== FAQ ====== -->
@@ -683,61 +625,22 @@
       </div>
     </section>
 
-    <!-- ====== OFERTA ====== -->
-    <section id="comprar" style="padding:48px 0;position:relative;z-index:10;">
-      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,102,255,0.026),transparent);filter:blur(60px);pointer-events:none;"></div>
-      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:420px;height:220px;background:rgba(0,102,255,0.08);border-radius:50%;filter:blur(90px);pointer-events:none;"></div>
-
-      <div class="container-sm" style="position:relative;z-index:1;padding:0 16px;">
-        <div class="offer-card reveal reveal-scale" style="background:var(--darker);border:1px solid #0066ff80;border-radius:24px;padding:clamp(20px,3vw,32px);text-align:center;box-shadow:0 0 60px rgba(0,102,255,0.18);">
-
-          <div style="display:inline-flex;align-items:center;gap:10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);padding:7px 14px;border-radius:999px;margin-bottom:18px;">
-            <span style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.92);font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;">
-              <i class="fa-solid fa-bolt" style="color:#f87171;"></i>
-              OFERTA EXPIRA EM
-            </span>
-            <strong style="font-family:'Space Grotesk',sans-serif;font-weight:800;color:#f87171;font-size:0.85rem;letter-spacing:0.12em;" id="offerTimer">30:00</strong>
-          </div>
-
-          <h2 style="font-size:clamp(1.3rem,3vw,2rem);font-weight:700;color:var(--light);margin-bottom:8px;">LISTA DE FORNECEDORES</h2>
-          <p class="text-faint" style="margin-bottom:20px;font-size:0.9rem;">+ BÔNUS EXCLUSIVO</p>
-
-          <div style="margin-bottom:4px;">
-            <span class="price-old">DE <span>R$ 700,00</span></span>
-            <!-- Parcelas menor, acima -->
-            <span style="font-family:'Space Grotesk',sans-serif;font-size:0.82rem;color:rgba(232,240,255,0.5);letter-spacing:0.12em;display:block;margin:8px 0 2px;">OU 12X DE <strong style="color:#00c853;">R$ 29,21</strong></span>
-            <!-- Preço à vista em destaque -->
-            <span class="price-new">R$ 297,90</span>
-          </div>
-
-          <p class="text-faint" style="font-size:0.78rem;margin-bottom:24px;margin-top:8px;">pagamento único · entrega imediata</p>
-
-          <ul style="list-style:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;margin-bottom:20px;display:flex;flex-direction:column;gap:10px;text-align:left;">
-            <li style="display:flex;align-items:flex-start;gap:10px;color:rgba(232,240,255,0.8);font-size:0.88rem;line-height:1.5;">
-              <i class="fa-solid fa-check" style="color:var(--sky);width:16px;flex-shrink:0;margin-top:2px;"></i>LISTA COMPLETA DE FORNECEDORES DE CONFIANÇA
-            </li>
-            <li style="display:flex;align-items:flex-start;gap:10px;color:rgba(232,240,255,0.8);font-size:0.88rem;line-height:1.5;">
-              <i class="fa-solid fa-check" style="color:var(--sky);width:16px;flex-shrink:0;margin-top:2px;"></i>BÔNUS DE CONTATOS DOS PROFISSIONAIS QUE CUIDAM DE CADA DETALHE DA NOSSA LOJA
-            </li>
-          </ul>
-
-          <a href="https://go.perfectpay.com.br/PPU38CQB5SG" target="_blank" class="btn-blue pulse" style="width:100%;font-size:0.95rem;padding:18px 24px;margin-bottom:14px;">
-            GARANTIR AGORA A LISTA!!!
-            <i class="fa-solid fa-arrow-right"></i>
-          </a>
-
-          <p class="text-faint" style="font-size:0.72rem;">
-            <i class="fa-solid fa-lock" style="margin-right:5px;color:var(--sky);"></i>
-            Compra 100% segura · Entrega por e-mail imediata
-          </p>
+    <!-- ====== FEEDBACK DOS CLIENTES ====== -->
+    <section id="feedback" class="section-mobile-pad" style="padding:60px 0;">
+      <div class="container">
+        <div class="reveal" style="text-align:center;margin-bottom:36px;">
+          <span class="badge">PROVA SOCIAL</span>
+          <h2 style="font-size:clamp(1.5rem,3.5vw,2.5rem);font-weight:700;color:var(--light);margin-top:16px;margin-bottom:12px;">Quem já comprou aprova</h2>
+          <p class="text-muted" style="font-size:0.9rem;max-width:480px;margin:0 auto;line-height:1.7;">VEJA O QUE OUTROS LOJISTAS DIZEM DEPOIS DE COMEÇAR A USAR A NOSSA LISTA DE FORNECEDORES.</p>
         </div>
+
+        <div class="feedback-grid" id="feedbackGrid"></div>
       </div>
     </section>
 
-    <!-- ====== FINAL CTA ====== -->
-    <section style="padding:60px 0 80px;">
-      <img class="lista-image" src="listaCompleta.png" alt="Lista completa" style="width:100%;max-width:860px;height:auto;display:block;margin:0 auto;" />
-      <div class="reveal final-cta" style="display:flex;justify-content:center;margin-top:24px;padding:0 16px;">
+    <!-- ====== CTA FINAL ====== -->
+    <section style="padding:20px 0 80px;">
+      <div class="reveal final-cta" style="display:flex;justify-content:center;padding:0 16px;">
         <a href="https://go.perfectpay.com.br/PPU38CQB5SG" target="_blank" class="btn-blue pulse" style="font-size:1rem;padding:18px 32px;max-width:480px;width:100%;display:inline-flex;justify-content:center;">
           QUERO A LISTA AGORA
           <i class="fa-solid fa-arrow-right"></i>
@@ -811,7 +714,7 @@
         document.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale").forEach((el) => observer.observe(el));
 
         // ===== Acordeão genérico (altura animada via scrollHeight) =====
-        // Usado pelo FAQ e pelo painel de formulário de feedback.
+        // Usado pelo FAQ.
         const setHeight = (el, value) => el.style.setProperty("height", value, "important");
         const collapseEl = (el) => {
           setHeight(el, el.scrollHeight + "px");
@@ -845,91 +748,6 @@
             toggleFaqItem(item, !isOpen);
           });
         });
-
-        // ===== FEEDBACK: abrir/fechar formulário =====
-        const feedbackWrap = document.getElementById("feedbackFormWrap");
-        const feedbackToggleBtn = document.getElementById("feedbackToggleBtn");
-        const feedbackToggleIcon = document.getElementById("feedbackToggleIcon");
-        const feedbackToggleLabel = document.getElementById("feedbackToggleLabel");
-
-        if (feedbackWrap && feedbackToggleBtn) {
-          feedbackToggleBtn.addEventListener("click", () => {
-            const open = feedbackToggleBtn.getAttribute("aria-expanded") !== "true";
-            feedbackWrap.dataset.open = open ? "true" : "false";
-            feedbackToggleBtn.setAttribute("aria-expanded", String(open));
-            feedbackToggleIcon.className = open ? "fa-solid fa-xmark" : "fa-solid fa-comment-dots";
-            feedbackToggleLabel.textContent = open ? "Fechar formulário" : "Quero deixar meu feedback";
-            if (open) expandEl(feedbackWrap); else collapseEl(feedbackWrap);
-          });
-        }
-
-        // ===== FEEDBACK: seletor de estrelas interativo =====
-        const starButtons = Array.from(document.querySelectorAll("#feedbackStars .star-btn"));
-        const notaInput = document.getElementById("feedbackNota");
-        let notaSelecionada = 0;
-
-        const pintarEstrelas = (valor) => {
-          starButtons.forEach((btn) => btn.classList.toggle("filled", Number(btn.dataset.value) <= valor));
-        };
-
-        starButtons.forEach((btn) => {
-          btn.addEventListener("mouseenter", () => pintarEstrelas(Number(btn.dataset.value)));
-          btn.addEventListener("click", () => {
-            notaSelecionada = Number(btn.dataset.value);
-            notaInput.value = String(notaSelecionada);
-            starButtons.forEach((b) => b.setAttribute("aria-checked", b === btn ? "true" : "false"));
-            pintarEstrelas(notaSelecionada);
-          });
-        });
-        const starsWrap = document.getElementById("feedbackStars");
-        if (starsWrap) starsWrap.addEventListener("mouseleave", () => pintarEstrelas(notaSelecionada));
-
-        // ===== FEEDBACK: validação e envio =====
-        // Backend ainda não conectado. Quando houver API/Supabase, troque o
-        // corpo de enviarFeedback() pela chamada real — o restante do fluxo
-        // (validação, mensagens, reset do form) não precisa mudar.
-        const enviarFeedback = async (payload) => {
-          console.log("Feedback pronto para envio (integração pendente):", payload);
-          return { ok: true, pending: true };
-        };
-
-        const feedbackForm = document.getElementById("feedbackForm");
-        const feedbackErro = document.getElementById("feedbackErro");
-        const feedbackErroTexto = document.getElementById("feedbackErroTexto");
-        const feedbackInfo = document.getElementById("feedbackInfo");
-
-        if (feedbackForm) {
-          feedbackForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            feedbackErro.classList.remove("visivel");
-            feedbackInfo.classList.remove("visivel");
-
-            const nome = document.getElementById("feedbackNome").value.trim();
-            const empresa = document.getElementById("feedbackEmpresa").value.trim();
-            const texto = document.getElementById("feedbackTexto").value.trim();
-            const nota = Number(notaInput.value);
-
-            const faltando = [];
-            if (!nome) faltando.push("seu nome");
-            if (!nota) faltando.push("uma nota de 1 a 5 estrelas");
-            if (!texto) faltando.push("o texto do feedback");
-
-            if (faltando.length > 0) {
-              feedbackErroTexto.textContent = "Antes de enviar, preencha: " + faltando.join(", ") + ".";
-              feedbackErro.classList.add("visivel");
-              return;
-            }
-
-            await enviarFeedback({ nome, empresa, nota, texto, criadoEm: new Date().toISOString() });
-
-            feedbackInfo.classList.add("visivel");
-            feedbackForm.reset();
-            notaSelecionada = 0;
-            notaInput.value = "0";
-            pintarEstrelas(0);
-            starButtons.forEach((b) => b.setAttribute("aria-checked", "false"));
-          });
-        }
 
         const timerElement = document.getElementById("fakeTimer");
         const offerTimer = document.getElementById("offerTimer");

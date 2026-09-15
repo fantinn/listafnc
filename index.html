@@ -54,7 +54,7 @@
 
       /* Acesso de quem ja comprou - discreto, nao compete com o funil */
       .acesso-topo {
-        position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+        position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
         z-index: 2;
         display: inline-flex; align-items: center; gap: 7px;
         padding: 8px 12px; border-radius: 9px;
@@ -66,9 +66,25 @@
         transition: background 0.2s, color 0.2s;
       }
       .acesso-topo:hover { background: rgba(0,102,255,0.3); color: #fff; }
+
+      /* Atalho de compra no topo - chamativo, usa a mesma cor de acao do site */
+      .comprar-topo {
+        position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+        z-index: 2;
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 8px 14px; border-radius: 9px;
+        background: var(--blue); color: #fff;
+        font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em;
+        text-decoration: none; white-space: nowrap;
+        box-shadow: 0 0 16px rgba(0,102,255,0.45);
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .comprar-topo:hover { transform: translateY(-50%) scale(1.06); box-shadow: 0 0 24px rgba(0,102,255,0.65); }
+
       @media (max-width: 720px) {
-        .acesso-topo span { display: none; }
-        .acesso-topo { right: 10px; padding: 8px 10px; }
+        .acesso-topo span, .comprar-topo span { display: none; }
+        .acesso-topo { left: 10px; padding: 8px 10px; }
+        .comprar-topo { right: 10px; padding: 8px 10px; }
       }
 
       .font-display { font-family: "Space Grotesk", sans-serif; }
@@ -373,6 +389,9 @@
       <a href="login.html" class="acesso-topo" title="Área de quem já comprou">
         <i class="fa-solid fa-lock-open"></i><span>JÁ COMPREI</span>
       </a>
+      <a href="https://go.perfectpay.com.br/PPU38CQB5SG" target="_blank" class="comprar-topo" title="Comprar a lista de fornecedores">
+        <i class="fa-solid fa-cart-shopping"></i><span>COMPRAR</span>
+      </a>
     </nav>
 
     <div style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:800px;height:350px;background:radial-gradient(circle,rgba(0,102,255,0.07),transparent 70%);filter:blur(60px);pointer-events:none;z-index:0;border-radius:50%;"></div>
@@ -629,8 +648,7 @@
       <div class="container">
         <div class="reveal" style="text-align:center;margin-bottom:36px;">
           <span class="badge">PROVA SOCIAL</span>
-          <h2 style="font-size:clamp(1.5rem,3.5vw,2.5rem);font-weight:700;color:var(--light);margin-top:16px;margin-bottom:12px;">Quem já comprou aprova</h2>
-          <p class="text-muted" style="font-size:0.9rem;max-width:480px;margin:0 auto;line-height:1.7;">VEJA O QUE OUTROS LOJISTAS DIZEM DEPOIS DE COMEÇAR A USAR A NOSSA LISTA DE FORNECEDORES.</p>
+          <h2 style="font-size:clamp(1.5rem,3.5vw,2.5rem);font-weight:700;color:var(--light);margin-top:16px;">Quem já comprou aprova</h2>
         </div>
 
         <div class="feedback-grid" id="feedbackGrid"></div>

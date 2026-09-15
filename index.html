@@ -189,6 +189,37 @@
       }
       .bonus-icon svg { width: 22px; height: 22px; }
 
+      /* ===== FAQ ===== */
+      .faq-list { display: flex; flex-direction: column; gap: 14px; max-width: 720px; margin: 0 auto; }
+      .faq-item {
+        background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+        border: 1px solid rgba(0,102,255,0.18);
+        border-radius: 16px; overflow: hidden;
+        transition: border-color 0.3s, box-shadow 0.3s;
+      }
+      .faq-item:hover { border-color: rgba(0,102,255,0.4); }
+      .faq-item.open { border-color: rgba(0,102,255,0.55); box-shadow: 0 12px 32px rgba(0,102,255,0.12); }
+      .faq-question {
+        width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        padding: 20px 22px; background: none; border: none; cursor: pointer; text-align: left;
+        font-family: "Space Grotesk", sans-serif; font-weight: 600; font-size: 0.98rem;
+        color: var(--light); transition: color 0.3s;
+      }
+      .faq-question:hover { color: var(--sky); }
+      .faq-question span { flex: 1; min-width: 0; }
+      .faq-question i {
+        color: var(--sky); font-size: 0.85rem; flex-shrink: 0;
+        transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
+      }
+      .faq-item.open .faq-question i { transform: rotate(180deg); }
+      .faq-answer {
+        display: grid; grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.22,1,0.36,1);
+      }
+      .faq-item.open .faq-answer { grid-template-rows: 1fr; }
+      .faq-answer-inner { overflow: hidden; }
+      .faq-answer-inner p { padding: 0 22px 20px; font-size: 0.88rem; line-height: 1.7; color: rgba(232,240,255,0.65); }
+
       .price-old {
         font-family: "Space Grotesk", sans-serif; font-size: 0.85rem;
         color: #f87171; -webkit-text-fill-color: #f87171;
@@ -263,6 +294,10 @@
         .bonus-icon svg { width: 17px !important; height: 17px !important; }
 
         .bonus-image { display: none !important; }
+
+        .faq-item { border-radius: 14px !important; }
+        .faq-question { padding: 16px 16px !important; font-size: 0.85rem !important; gap: 12px !important; }
+        .faq-answer-inner p { padding: 0 16px 16px !important; font-size: 0.82rem !important; }
 
         .offer-card { border-radius: 18px !important; padding: 20px 16px !important; }
         .price-new { font-size: clamp(2rem, 12vw, 2.8rem) !important; }
@@ -448,6 +483,67 @@
       </div>
     </section>
 
+    <!-- ====== FAQ ====== -->
+    <section id="faq" class="section-mobile-pad" style="padding:60px 0;">
+      <div class="container-sm">
+        <div class="reveal" style="text-align:center;margin-bottom:36px;">
+          <span class="badge">TIRE SUAS DÚVIDAS</span>
+          <h2 style="font-size:clamp(1.5rem,3.5vw,2.5rem);font-weight:700;color:var(--light);margin-top:16px;margin-bottom:12px;">Perguntas frequentes</h2>
+          <p class="text-muted" style="font-size:0.9rem;max-width:480px;margin:0 auto;line-height:1.7;">TUDO O QUE VOCÊ PRECISA SABER ANTES DE GARANTIR SEU ACESSO.</p>
+        </div>
+
+        <div class="faq-list">
+          <div class="faq-item reveal">
+            <button class="faq-question" aria-expanded="false">
+              <span>Como recebo meu acesso após a compra?</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">
+                <p>Assim que o pagamento é aprovado, você libera o acesso informando o e-mail e o CPF usados na compra e criando sua própria senha. A partir daí, é só entrar na área de membros sempre que quiser consultar a lista completa de fornecedores e os bônus inclusos.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item reveal d1">
+            <button class="faq-question" aria-expanded="false">
+              <span>Os fornecedores da lista são confiáveis?</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">
+                <p>Sim. São os mesmos fornecedores que utilizamos no nosso próprio negócio para trabalhar com peças de alto padrão de qualidade. Cada contato é selecionado antes de entrar na lista, para garantir uma experiência de compra segura e consistente.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item reveal d2">
+            <button class="faq-question" aria-expanded="false">
+              <span>Preciso ter CNPJ para comprar a lista?</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">
+                <p>Não. Para liberar o acesso pedimos apenas o e-mail e o CPF usados na compra — não é necessário ter CNPJ. A lista atende tanto quem está começando como pessoa física quanto lojistas que já têm empresa aberta.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item reveal d3">
+            <button class="faq-question" aria-expanded="false">
+              <span>A lista de fornecedores é atualizada?</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">
+                <p>Sim. A lista fica disponível dentro de uma área de membros que é mantida e atualizada pela nossa equipe, então você sempre acessa as informações mais recentes sem precisar comprar nada de novo — basta entrar com o seu login.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ====== OFERTA ====== -->
     <section id="comprar" style="padding:48px 0;position:relative;z-index:10;">
       <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,102,255,0.026),transparent);filter:blur(60px);pointer-events:none;"></div>
@@ -539,6 +635,21 @@
         }, { threshold: 0.05, rootMargin: "0px 0px -10px 0px" });
 
         document.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale").forEach((el) => observer.observe(el));
+
+        document.querySelectorAll(".faq-item").forEach((item) => {
+          const question = item.querySelector(".faq-question");
+          question.addEventListener("click", () => {
+            const isOpen = item.classList.contains("open");
+            document.querySelectorAll(".faq-item.open").forEach((openItem) => {
+              if (openItem !== item) {
+                openItem.classList.remove("open");
+                openItem.querySelector(".faq-question").setAttribute("aria-expanded", "false");
+              }
+            });
+            item.classList.toggle("open", !isOpen);
+            question.setAttribute("aria-expanded", String(!isOpen));
+          });
+        });
 
         const timerElement = document.getElementById("fakeTimer");
         const offerTimer = document.getElementById("offerTimer");

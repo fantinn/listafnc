@@ -218,6 +218,77 @@
       }
       .faq-answer-inner p { padding: 0 22px 20px; font-size: 0.88rem; line-height: 1.7; color: rgba(232,240,255,0.65); }
 
+      /* ===== FEEDBACK ===== */
+      .feedback-grid { display: grid; grid-template-columns: 1fr; gap: 16px; max-width: 1000px; margin: 0 auto; }
+      .feedback-card { min-height: 0; gap: 14px; }
+      .feedback-head { display: flex; align-items: center; gap: 12px; }
+      .feedback-avatar {
+        width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+        background: rgba(0,102,255,0.15); color: var(--sky);
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 0.9rem;
+      }
+      .feedback-name { font-weight: 700; font-size: 0.92rem; color: var(--light); }
+      .feedback-empresa { font-size: 0.76rem; color: rgba(232,240,255,0.45); margin-top: 2px; }
+      .stars { display: flex; gap: 3px; }
+      .stars i { font-size: 0.85rem; color: rgba(232,240,255,0.18); }
+      .stars i.filled { color: var(--sky); }
+      .feedback-texto { font-size: 0.88rem; line-height: 1.65; color: rgba(232,240,255,0.72); }
+      .feedback-demo-tag {
+        margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06);
+        font-size: 0.68rem; color: rgba(232,240,255,0.35); letter-spacing: 0.08em;
+        display: flex; align-items: center; gap: 6px;
+      }
+
+      .feedback-toggle-wrap { display: flex; justify-content: center; margin-top: 32px; }
+      .feedback-form-wrap { height: 0; overflow: hidden; transition: height 0.4s cubic-bezier(0.22,1,0.36,1); }
+      .feedback-form {
+        max-width: 560px; margin: 24px auto 0;
+        background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+        border: 1px solid rgba(0,102,255,0.2); border-radius: 20px; padding: 28px;
+      }
+      .feedback-form label {
+        display: block; font-size: 0.7rem; letter-spacing: 0.1em;
+        color: rgba(232,240,255,0.6); margin-bottom: 8px;
+      }
+      .feedback-form .field { margin-bottom: 18px; }
+      .feedback-form input[type="text"],
+      .feedback-form textarea {
+        width: 100%; padding: 14px 16px;
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 12px; color: var(--light); font-family: "Inter", sans-serif; font-size: 0.9rem;
+        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      }
+      .feedback-form textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
+      .feedback-form input[type="text"]:focus,
+      .feedback-form textarea:focus {
+        outline: none; border-color: var(--blue);
+        background: rgba(0,102,255,0.08); box-shadow: 0 0 0 3px rgba(0,102,255,0.15);
+      }
+      .feedback-form input::placeholder,
+      .feedback-form textarea::placeholder { color: rgba(232,240,255,0.28); }
+
+      .star-rating { display: flex; gap: 8px; }
+      .star-btn {
+        background: none; border: none; cursor: pointer; padding: 4px;
+        font-size: 1.4rem; color: rgba(232,240,255,0.2); transition: color 0.15s, transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .star-btn:hover, .star-btn:focus-visible { transform: scale(1.12); }
+      .star-btn.filled { color: var(--sky); }
+      .star-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 4px; }
+
+      .form-msg {
+        display: none; align-items: flex-start; gap: 10px;
+        border-radius: 10px; padding: 12px 14px; margin-bottom: 18px;
+        font-size: 0.8rem; line-height: 1.5;
+      }
+      .form-msg.visivel { display: flex; }
+      .form-msg.erro { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; }
+      .form-msg.info { background: rgba(0,102,255,0.1); border: 1px solid rgba(0,102,255,0.3); color: var(--sky); }
+
+      .feedback-form .btn-blue { width: 100%; }
+
       .price-old {
         font-family: "Space Grotesk", sans-serif; font-size: 0.85rem;
         color: #f87171; -webkit-text-fill-color: #f87171;
@@ -257,6 +328,7 @@
       @media (min-width: 768px) {
         .grid-3 { grid-template-columns: repeat(2, minmax(480px, 1fr)); max-width: 1000px; margin: 0 auto; gap: 12px; }
         .bonus-layout { grid-template-columns: minmax(280px, 0.95fr) minmax(380px, 1.2fr); }
+        .feedback-grid { grid-template-columns: repeat(3, 1fr); }
       }
 
       /* ===== MOBILE ===== */
@@ -296,6 +368,10 @@
         .faq-item { border-radius: 14px !important; }
         .faq-question { padding: 16px 16px !important; font-size: 0.85rem !important; gap: 12px !important; }
         .faq-answer-inner p { padding: 0 16px 16px !important; font-size: 0.82rem !important; }
+
+        .feedback-card { padding: 18px !important; border-radius: 16px !important; }
+        .feedback-form { padding: 20px !important; border-radius: 16px !important; }
+        .star-btn { font-size: 1.6rem !important; padding: 6px !important; }
 
         .offer-card { border-radius: 18px !important; padding: 20px 16px !important; }
         .price-new { font-size: clamp(2rem, 12vw, 2.8rem) !important; }
@@ -481,6 +557,71 @@
       </div>
     </section>
 
+    <!-- ====== FEEDBACK DOS CLIENTES ====== -->
+    <section id="feedback" class="section-mobile-pad" style="padding:60px 0;">
+      <div class="container">
+        <div class="reveal" style="text-align:center;margin-bottom:36px;">
+          <span class="badge">PROVA SOCIAL</span>
+          <h2 style="font-size:clamp(1.5rem,3.5vw,2.5rem);font-weight:700;color:var(--light);margin-top:16px;margin-bottom:12px;">Quem já comprou aprova</h2>
+          <p class="text-muted" style="font-size:0.9rem;max-width:480px;margin:0 auto;line-height:1.7;">VEJA O QUE OUTROS LOJISTAS DIZEM DEPOIS DE COMEÇAR A USAR A NOSSA LISTA DE FORNECEDORES.</p>
+        </div>
+
+        <div class="feedback-grid" id="feedbackGrid"></div>
+
+        <div class="feedback-toggle-wrap reveal">
+          <button type="button" class="btn-blue" id="feedbackToggleBtn" aria-expanded="false" aria-controls="feedbackFormWrap">
+            <i class="fa-solid fa-comment-dots" id="feedbackToggleIcon"></i>
+            <span id="feedbackToggleLabel">Quero deixar meu feedback</span>
+          </button>
+        </div>
+
+        <div class="feedback-form-wrap" id="feedbackFormWrap">
+          <form class="feedback-form" id="feedbackForm" novalidate>
+            <div class="form-msg erro" id="feedbackErro">
+              <i class="fa-solid fa-circle-exclamation" style="margin-top:2px;"></i>
+              <span id="feedbackErroTexto"></span>
+            </div>
+            <div class="form-msg info" id="feedbackInfo">
+              <i class="fa-solid fa-circle-info" style="margin-top:2px;"></i>
+              <span>Formulário validado! A integração para salvar os feedbacks automaticamente ainda está sendo conectada — por enquanto este envio é apenas uma demonstração da interface.</span>
+            </div>
+
+            <div class="field">
+              <label for="feedbackNome">Nome</label>
+              <input type="text" id="feedbackNome" name="nome" placeholder="Seu nome" autocomplete="name" />
+            </div>
+
+            <div class="field">
+              <label for="feedbackEmpresa">Empresa ou segmento <span style="text-transform:none;opacity:0.6;">(opcional)</span></label>
+              <input type="text" id="feedbackEmpresa" name="empresa" placeholder="Ex.: loja de roupas, brechó..." autocomplete="organization" />
+            </div>
+
+            <div class="field">
+              <label>Sua nota</label>
+              <div class="star-rating" id="feedbackStars" role="radiogroup" aria-label="Nota de 1 a 5 estrelas">
+                <button type="button" class="star-btn" data-value="1" role="radio" aria-checked="false" aria-label="1 estrela"><i class="fa-solid fa-star"></i></button>
+                <button type="button" class="star-btn" data-value="2" role="radio" aria-checked="false" aria-label="2 estrelas"><i class="fa-solid fa-star"></i></button>
+                <button type="button" class="star-btn" data-value="3" role="radio" aria-checked="false" aria-label="3 estrelas"><i class="fa-solid fa-star"></i></button>
+                <button type="button" class="star-btn" data-value="4" role="radio" aria-checked="false" aria-label="4 estrelas"><i class="fa-solid fa-star"></i></button>
+                <button type="button" class="star-btn" data-value="5" role="radio" aria-checked="false" aria-label="5 estrelas"><i class="fa-solid fa-star"></i></button>
+              </div>
+              <input type="hidden" id="feedbackNota" value="0" />
+            </div>
+
+            <div class="field">
+              <label for="feedbackTexto">Seu feedback</label>
+              <textarea id="feedbackTexto" name="texto" placeholder="Conte como foi sua experiência com a lista de fornecedores..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-blue">
+              Enviar feedback
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
     <!-- ====== FAQ ====== -->
     <section id="faq" class="section-mobile-pad" style="padding:60px 0;">
       <div class="container-sm">
@@ -632,29 +773,66 @@
           });
         }, { threshold: 0.05, rootMargin: "0px 0px -10px 0px" });
 
+        // ===== FEEDBACK: dados de demonstração =====
+        // DEMO: nenhum depoimento real ainda. Ao integrar um backend, troque
+        // feedbacksDemo por dados vindos da API/Supabase (mesmo formato).
+        const feedbacksDemo = [
+          { demo: true, nome: "Camila R.", empresa: "Loja de roupas femininas", nota: 5, texto: "Consegui fornecedores de peças muito acima do que eu já usava. Só isso já valeu o investimento." },
+          { demo: true, nome: "Diego M.", empresa: "Multimarcas masculina", nota: 5, texto: "Os contatos são realmente ativos, respondem rápido e o preço de atacado compensa muito." },
+          { demo: true, nome: "Bruna S.", empresa: "Brechó / streetwear", nota: 4, texto: "Lista boa e organizada. Só senti falta de mais opções pra acessórios, mas o suporte foi rápido." },
+        ];
+
+        const getIniciais = (nome) => nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join("");
+        const renderStarsHtml = (nota) => Array.from({ length: 5 }, (_, i) => `<i class="fa-solid fa-star${i < nota ? " filled" : ""}"></i>`).join("");
+
+        const renderFeedbacks = (lista) => {
+          const grid = document.getElementById("feedbackGrid");
+          if (!grid) return;
+          const delays = ["", "d1", "d2", "d3"];
+          grid.innerHTML = lista.map((fb, i) => `
+            <div class="card feedback-card reveal ${delays[i] || ""}">
+              <div>
+                <div class="feedback-head">
+                  <div class="feedback-avatar">${getIniciais(fb.nome)}</div>
+                  <div>
+                    <div class="feedback-name">${fb.nome}</div>
+                    ${fb.empresa ? `<div class="feedback-empresa">${fb.empresa}</div>` : ""}
+                  </div>
+                </div>
+                <div class="stars" style="margin:12px 0 10px;">${renderStarsHtml(fb.nota)}</div>
+                <p class="feedback-texto">"${fb.texto}"</p>
+              </div>
+              ${fb.demo ? `<div class="feedback-demo-tag"><i class="fa-solid fa-circle-info"></i> Depoimento de demonstração</div>` : ""}
+            </div>
+          `).join("");
+        };
+        renderFeedbacks(feedbacksDemo);
+
         document.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale").forEach((el) => observer.observe(el));
 
+        // ===== Acordeão genérico (altura animada via scrollHeight) =====
+        // Usado pelo FAQ e pelo painel de formulário de feedback.
         const setHeight = (el, value) => el.style.setProperty("height", value, "important");
-        const closeFaqItem = (item) => {
-          const answer = item.querySelector(".faq-answer");
-          setHeight(answer, answer.scrollHeight + "px");
-          requestAnimationFrame(() => {
-            item.classList.remove("open");
-            item.querySelector(".faq-question").setAttribute("aria-expanded", "false");
-            setHeight(answer, "0px");
-          });
+        const collapseEl = (el) => {
+          setHeight(el, el.scrollHeight + "px");
+          requestAnimationFrame(() => setHeight(el, "0px"));
         };
-        const openFaqItem = (item) => {
-          const answer = item.querySelector(".faq-answer");
-          item.classList.add("open");
-          item.querySelector(".faq-question").setAttribute("aria-expanded", "true");
-          setHeight(answer, answer.scrollHeight + "px");
-          answer.addEventListener("transitionend", function onEnd(e) {
+        const expandEl = (el) => {
+          setHeight(el, el.scrollHeight + "px");
+          el.addEventListener("transitionend", function onEnd(e) {
             if (e.propertyName === "height") {
-              if (item.classList.contains("open")) setHeight(answer, "auto");
-              answer.removeEventListener("transitionend", onEnd);
+              if (el.dataset.open === "true") setHeight(el, "auto");
+              el.removeEventListener("transitionend", onEnd);
             }
           });
+        };
+
+        const toggleFaqItem = (item, open) => {
+          const answer = item.querySelector(".faq-answer");
+          answer.dataset.open = open ? "true" : "false";
+          item.classList.toggle("open", open);
+          item.querySelector(".faq-question").setAttribute("aria-expanded", String(open));
+          if (open) expandEl(answer); else collapseEl(answer);
         };
 
         document.querySelectorAll(".faq-item").forEach((item) => {
@@ -662,15 +840,96 @@
           question.addEventListener("click", () => {
             const isOpen = item.classList.contains("open");
             document.querySelectorAll(".faq-item.open").forEach((openItem) => {
-              if (openItem !== item) closeFaqItem(openItem);
+              if (openItem !== item) toggleFaqItem(openItem, false);
             });
-            if (isOpen) {
-              closeFaqItem(item);
-            } else {
-              openFaqItem(item);
-            }
+            toggleFaqItem(item, !isOpen);
           });
         });
+
+        // ===== FEEDBACK: abrir/fechar formulário =====
+        const feedbackWrap = document.getElementById("feedbackFormWrap");
+        const feedbackToggleBtn = document.getElementById("feedbackToggleBtn");
+        const feedbackToggleIcon = document.getElementById("feedbackToggleIcon");
+        const feedbackToggleLabel = document.getElementById("feedbackToggleLabel");
+
+        if (feedbackWrap && feedbackToggleBtn) {
+          feedbackToggleBtn.addEventListener("click", () => {
+            const open = feedbackToggleBtn.getAttribute("aria-expanded") !== "true";
+            feedbackWrap.dataset.open = open ? "true" : "false";
+            feedbackToggleBtn.setAttribute("aria-expanded", String(open));
+            feedbackToggleIcon.className = open ? "fa-solid fa-xmark" : "fa-solid fa-comment-dots";
+            feedbackToggleLabel.textContent = open ? "Fechar formulário" : "Quero deixar meu feedback";
+            if (open) expandEl(feedbackWrap); else collapseEl(feedbackWrap);
+          });
+        }
+
+        // ===== FEEDBACK: seletor de estrelas interativo =====
+        const starButtons = Array.from(document.querySelectorAll("#feedbackStars .star-btn"));
+        const notaInput = document.getElementById("feedbackNota");
+        let notaSelecionada = 0;
+
+        const pintarEstrelas = (valor) => {
+          starButtons.forEach((btn) => btn.classList.toggle("filled", Number(btn.dataset.value) <= valor));
+        };
+
+        starButtons.forEach((btn) => {
+          btn.addEventListener("mouseenter", () => pintarEstrelas(Number(btn.dataset.value)));
+          btn.addEventListener("click", () => {
+            notaSelecionada = Number(btn.dataset.value);
+            notaInput.value = String(notaSelecionada);
+            starButtons.forEach((b) => b.setAttribute("aria-checked", b === btn ? "true" : "false"));
+            pintarEstrelas(notaSelecionada);
+          });
+        });
+        const starsWrap = document.getElementById("feedbackStars");
+        if (starsWrap) starsWrap.addEventListener("mouseleave", () => pintarEstrelas(notaSelecionada));
+
+        // ===== FEEDBACK: validação e envio =====
+        // Backend ainda não conectado. Quando houver API/Supabase, troque o
+        // corpo de enviarFeedback() pela chamada real — o restante do fluxo
+        // (validação, mensagens, reset do form) não precisa mudar.
+        const enviarFeedback = async (payload) => {
+          console.log("Feedback pronto para envio (integração pendente):", payload);
+          return { ok: true, pending: true };
+        };
+
+        const feedbackForm = document.getElementById("feedbackForm");
+        const feedbackErro = document.getElementById("feedbackErro");
+        const feedbackErroTexto = document.getElementById("feedbackErroTexto");
+        const feedbackInfo = document.getElementById("feedbackInfo");
+
+        if (feedbackForm) {
+          feedbackForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            feedbackErro.classList.remove("visivel");
+            feedbackInfo.classList.remove("visivel");
+
+            const nome = document.getElementById("feedbackNome").value.trim();
+            const empresa = document.getElementById("feedbackEmpresa").value.trim();
+            const texto = document.getElementById("feedbackTexto").value.trim();
+            const nota = Number(notaInput.value);
+
+            const faltando = [];
+            if (!nome) faltando.push("seu nome");
+            if (!nota) faltando.push("uma nota de 1 a 5 estrelas");
+            if (!texto) faltando.push("o texto do feedback");
+
+            if (faltando.length > 0) {
+              feedbackErroTexto.textContent = "Antes de enviar, preencha: " + faltando.join(", ") + ".";
+              feedbackErro.classList.add("visivel");
+              return;
+            }
+
+            await enviarFeedback({ nome, empresa, nota, texto, criadoEm: new Date().toISOString() });
+
+            feedbackInfo.classList.add("visivel");
+            feedbackForm.reset();
+            notaSelecionada = 0;
+            notaInput.value = "0";
+            pintarEstrelas(0);
+            starButtons.forEach((b) => b.setAttribute("aria-checked", "false"));
+          });
+        }
 
         const timerElement = document.getElementById("fakeTimer");
         const offerTimer = document.getElementById("offerTimer");
